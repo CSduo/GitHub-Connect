@@ -6,10 +6,15 @@ import { prisma } from "@/lib/db";
 
 export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const article = await prisma.article.findUnique({
-    where: { slug },
-    include: { category: true },
-  });
+  let article: any = null;
+  try {
+    article = await prisma.article.findUnique({
+      where: { slug },
+      include: { category: true },
+    });
+  } catch (error) {
+    console.error("Failed to fetch article from database:", error);
+  }
 
   if (!article || article.status !== "PUBLISHED") {
     notFound();

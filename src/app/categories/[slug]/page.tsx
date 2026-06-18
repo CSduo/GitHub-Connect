@@ -6,19 +6,30 @@ import { FileText, BookOpen } from "lucide-react";
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const category = await prisma.category.findUnique({ where: { slug } });
-  if (!category) notFound();
+  let category: any = null;
+  let articles: any[] = [];
+  let papers: any[] = [];
+  try {
+    category = await prisma.category.findUnique({ where: { slug } });
+    if (category) {
+      const [fetchedArticles, fetchedPapers] = await Promise.all([
+        prisma.article.findMany({
+          where: { categorySlug: slug, status: "PUBLISHED" },
+          orderBy: { publishedAt: "desc" },
+        }),
+        prisma.paper.findMany({
+          where: { categorySlug: slug, status: "PUBLISHED" },
+          orderBy: { publishedAt: "desc" },
+        }),
+      ]);
+      articles = fetchedArticles;
+      papers = fetchedPapers;
+    }
+  } catch (error) {
+    console.error("Failed to fetch category details from database:", error);
+  }
 
-  const [articles, papers] = await Promise.all([
-    prisma.article.findMany({
-      where: { categorySlug: slug, status: "PUBLISHED" },
-      orderBy: { publishedAt: "desc" },
-    }),
-    prisma.paper.findMany({
-      where: { categorySlug: slug, status: "PUBLISHED" },
-      orderBy: { publishedAt: "desc" },
-    }),
-  ]);
+  if (!category) notFound();
 
   return (
     <div className="min-h-[100dvh] pb-24" style={{ background: "var(--bg)" }}>

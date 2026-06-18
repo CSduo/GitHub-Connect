@@ -6,10 +6,15 @@ import { prisma } from "@/lib/db";
 
 export default async function PaperPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const paper = await prisma.paper.findUnique({
-    where: { slug },
-    include: { category: true },
-  });
+  let paper: any = null;
+  try {
+    paper = await prisma.paper.findUnique({
+      where: { slug },
+      include: { category: true },
+    });
+  } catch (error) {
+    console.error("Failed to fetch paper from database:", error);
+  }
 
   if (!paper || paper.status !== "PUBLISHED") {
     notFound();
