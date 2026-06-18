@@ -7,25 +7,30 @@ import { NewsletterBlock } from "@/components/shared/NewsletterBlock";
 import { DomainGrid } from "@/components/shared/DomainGrid";
 
 async function getHomeData() {
-  const [featuredArticle, latestPapers, categories] = await Promise.all([
-    prisma.article.findFirst({
-      where: { status: "PUBLISHED" },
-      orderBy: [{ featured: "desc" }, { publishedAt: "desc" }],
-      include: { category: true },
-    }),
-    prisma.paper.findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: { publishedAt: "desc" },
-      take: 3,
-      include: { category: true },
-    }),
-    prisma.category.findMany({
-      where: { visible: true },
-      orderBy: { sortOrder: "asc" },
-    }),
-  ]);
+  try {
+    const [featuredArticle, latestPapers, categories] = await Promise.all([
+      prisma.article.findFirst({
+        where: { status: "PUBLISHED" },
+        orderBy: [{ featured: "desc" }, { publishedAt: "desc" }],
+        include: { category: true },
+      }),
+      prisma.paper.findMany({
+        where: { status: "PUBLISHED" },
+        orderBy: { publishedAt: "desc" },
+        take: 3,
+        include: { category: true },
+      }),
+      prisma.category.findMany({
+        where: { visible: true },
+        orderBy: { sortOrder: "asc" },
+      }),
+    ]);
 
-  return { featuredArticle, latestPapers, categories };
+    return { featuredArticle, latestPapers, categories };
+  } catch (error) {
+    console.error("Failed to fetch homepage data from database:", error);
+    return { featuredArticle: null, latestPapers: [], categories: [] };
+  }
 }
 
 export default async function HomePage() {

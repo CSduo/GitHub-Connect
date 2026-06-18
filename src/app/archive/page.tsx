@@ -4,18 +4,26 @@ import { prisma } from "@/lib/db";
 import { FileText, BookOpen, Calendar } from "lucide-react";
 
 export default async function ArchivePage() {
-  const [articles, papers] = await Promise.all([
-    prisma.article.findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: { publishedAt: "desc" },
-      include: { category: true },
-    }),
-    prisma.paper.findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: { publishedAt: "desc" },
-      include: { category: true },
-    }),
-  ]);
+  let articles: any[] = [];
+  let papers: any[] = [];
+  try {
+    const [fetchedArticles, fetchedPapers] = await Promise.all([
+      prisma.article.findMany({
+        where: { status: "PUBLISHED" },
+        orderBy: { publishedAt: "desc" },
+        include: { category: true },
+      }),
+      prisma.paper.findMany({
+        where: { status: "PUBLISHED" },
+        orderBy: { publishedAt: "desc" },
+        include: { category: true },
+      }),
+    ]);
+    articles = fetchedArticles;
+    papers = fetchedPapers;
+  } catch (error) {
+    console.error("Failed to fetch archive data from database:", error);
+  }
 
   const allItems = [
     ...articles.map((a: any) => ({ ...a, itemType: "article" as const })),

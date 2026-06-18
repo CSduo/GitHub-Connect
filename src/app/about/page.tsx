@@ -5,10 +5,15 @@ import { DomainGrid } from "@/components/shared/DomainGrid";
 import { prisma } from "@/lib/db";
 
 export default async function AboutPage() {
-  const categories = await prisma.category.findMany({
-    where: { visible: true },
-    orderBy: { sortOrder: "asc" },
-  });
+  let categories: any[] = [];
+  try {
+    categories = await prisma.category.findMany({
+      where: { visible: true },
+      orderBy: { sortOrder: "asc" },
+    });
+  } catch (error) {
+    console.error("Failed to fetch categories for about page:", error);
+  }
 
   return (
     <div className="min-h-[100dvh] pb-24" style={{ background: "var(--bg)" }}>
