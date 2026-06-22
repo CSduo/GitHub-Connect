@@ -9,40 +9,30 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextType>({
-  theme: "light",
-  toggleTheme: () => {},
-});
+const ThemeContext = createContext<ThemeContextType>({ theme: "dark", toggleTheme: () => {} });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<Theme>(() => {
+    try {
+      return (localStorage.getItem("anv-theme") as Theme) || "dark";
+    } catch {
+      return "dark";
+    }
+  });
 
   useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem("anvikshiki-theme") as Theme | null;
-    if (saved === "light" || saved === "dark") {
-      setTheme(saved);
-      document.documentElement.setAttribute("data-theme", saved);
-    } else {
-      // Default to light
-      setTheme("light");
-      document.documentElement.setAttribute("data-theme", "light");
+    document.documentElement.setAttribute("data-theme", theme);
+    try { localStorage.setItem("anv-theme", theme); } catch {}
+  }, [theme]);
+
+  // Force dark on mount if nothing in storage
+  useEffect(() => {
+    if (!localStorage.getItem("anv-theme")) {
+      document.documentElement.setAttribute("data-theme", "dark");
     }
   }, []);
 
-  const toggleTheme = () => {
-    setTheme((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      localStorage.setItem("anvikshiki-theme", next);
-      document.documentElement.setAttribute("data-theme", next);
-      return next;
-    });
-  };
-
-  if (!mounted) {
-    return <div style={{ visibility: "hidden" }}>{children}</div>;
-  }
+  const toggleTheme = () => setTheme(t => t === "dark" ? "light" : "dark");
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

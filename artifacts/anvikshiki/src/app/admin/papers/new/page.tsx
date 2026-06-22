@@ -1,88 +1,112 @@
-import { useLocation } from 'wouter';
-"use client";
-
 import { useState } from "react";
-;
-import { Link } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
+import { AdminSidebar } from "@/components/sacred/AdminSidebar";
+import { LotusDivider } from "@/components/sacred/LotusIcon";
 
-const CATEGORIES = [
-  { slug: "philosophy", name: "Philosophy" },
-  { slug: "history", name: "History" },
-  { slug: "psychology", name: "Psychology" },
-  { slug: "sociology", name: "Sociology" },
-  { slug: "science", name: "Science" },
-  { slug: "geopolitics", name: "Geopolitics" },
-];
+const base = () => import.meta.env.BASE_URL.replace(/\/$/, "");
 
-export default function NewPaperPage() {
+export default function AdminNewPaperPage() {
   const [, navigate] = useLocation();
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
-    title: "", abstract: "", body: "", categorySlug: "philosophy",
-    tags: "", authorName: "", pdfUrl: "", citationText: "",
-    peerReviewed: false, paperType: "RESEARCH_PAPER", year: new Date().getFullYear(),
-    doi: "", status: "DRAFT",
+    title: "", slug: "", authorName: "", authorEmail: "", abstract: "", body: "",
+    disciplineSlug: "", year: new Date().getFullYear().toString(),
+    keywords: "", peerReviewed: false, status: "DRAFT",
   });
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const set = (k: string, v: string | boolean) => setForm(f => ({ ...f, [k]: v }));
+
+  const autoSlug = (title: string) => title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (!form.title.trim()) return toast.error("Title is required");
+    setSaving(true);
     try {
-      const res = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/admin/papers`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
-        body: JSON.stringify({ ...form, tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean) }),
+      const r = await fetch(`${base()}/api/admin/papers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, year: parseInt(form.year) || new Date().getFullYear() }),
+        credentials: "include",
       });
-      if (res.ok) { toast.success("Paper created"); navigate("/admin/papers"); }
-      else toast.error("Failed");
-    } catch { toast.error("Error"); }
-    finally { setLoading(false); }
+      if (!r.ok) { const d = await r.json(); throw new Error(d.error || "Failed"); }
+      toast.success("Paper created");
+      navigate("/admin/papers");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create paper");
+    }
+    setSaving(false);
   };
 
   return (
-    <div className="min-h-[100dvh]" style={{ background: "var(--bg)" }}>
-      <div className="container-anv py-8 max-w-3xl">
-        <Link href="/admin/papers" className="inline-flex items-center gap-2 font-ui text-sm mb-6" style={{ color: "var(--muted)" }}>
-          <ArrowLeft size={16} /> Back
-        </Link>
-        <h1 className="font-display text-2xl mb-6" style={{ color: "var(--ink)" }}>New Paper</h1>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div><label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>Title *</label>
-            <input type="text" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="input-anv" /></div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div><label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>Category</label>
-              <select value={form.categorySlug} onChange={(e) => setForm({ ...form, categorySlug: e.target.value })} className="input-anv">
-                {CATEGORIES.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
-              </select></div>
-            <div><label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>Paper Type</label>
-              <select value={form.paperType} onChange={(e) => setForm({ ...form, paperType: e.target.value })} className="input-anv">
-                <option value="RESEARCH_PAPER">Research Paper</option>
-                <option value="WORKING_PAPER">Working Paper</option>
-                <option value="REVIEW_ESSAY">Review Essay</option>
-                <option value="MONOGRAPH">Monograph</option>
-              </select></div>
+    <div className="admin-layout">
+      <AdminSidebar active="/admin/papers" />
+      <main className="admin-main">
+        <div className="flex items-center gap-3 mb-6">
+          <Link href="/admin/papers" className="btn-sacred btn-ghost text-xs inline-flex items-center gap-1"><ArrowLeft size={13} /> Papers</Link>
+          <h1 className="font-display text-2xl" style={{ color: "var(--gold-bright)" }}>New Paper</h1>
+        </div>
+        <form onSubmit={submit} className="max-w-2xl space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="form-label" htmlFor="paper-title">Title *</label>
+              <input id="paper-title" className="input-sacred" value={form.title} onChange={e => { set("title", e.target.value); if (!form.slug) set("slug", autoSlug(e.target.value)); }} required />
+            </div>
+            <div>
+              <label className="form-label" htmlFor="paper-slug">Slug *</label>
+              <input id="paper-slug" className="input-sacred" value={form.slug} onChange={e => set("slug", e.target.value)} required />
+            </div>
+            <div>
+              <label className="form-label" htmlFor="paper-author">Author Name</label>
+              <input id="paper-author" className="input-sacred" value={form.authorName} onChange={e => set("authorName", e.target.value)} />
+            </div>
+            <div>
+              <label className="form-label" htmlFor="paper-email">Author Email</label>
+              <input id="paper-email" type="email" className="input-sacred" value={form.authorEmail} onChange={e => set("authorEmail", e.target.value)} />
+            </div>
+            <div>
+              <label className="form-label" htmlFor="paper-year">Year</label>
+              <input id="paper-year" type="number" className="input-sacred" value={form.year} onChange={e => set("year", e.target.value)} min="1900" max="2100" />
+            </div>
+            <div>
+              <label className="form-label" htmlFor="paper-discipline">Discipline Slug</label>
+              <input id="paper-discipline" className="input-sacred" placeholder="philosophy, history, etc." value={form.disciplineSlug} onChange={e => set("disciplineSlug", e.target.value)} />
+            </div>
+            <div>
+              <label className="form-label" htmlFor="paper-status">Status</label>
+              <select id="paper-status" className="input-sacred" value={form.status} onChange={e => set("status", e.target.value)}>
+                <option value="DRAFT">Draft</option>
+                <option value="PUBLISHED">Published</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2 pt-5">
+              <input id="peer-reviewed" type="checkbox" checked={form.peerReviewed} onChange={e => set("peerReviewed", e.target.checked)} className="accent-gold" />
+              <label htmlFor="peer-reviewed" className="form-label cursor-pointer">Peer Reviewed</label>
+            </div>
           </div>
-          <div><label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>Abstract</label>
-            <textarea rows={4} value={form.abstract} onChange={(e) => setForm({ ...form, abstract: e.target.value })} className="input-anv resize-none" /></div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div><label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>PDF URL</label>
-              <input type="url" value={form.pdfUrl} onChange={(e) => setForm({ ...form, pdfUrl: e.target.value })} className="input-anv" placeholder="https://..." /></div>
-            <div><label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>Year</label>
-              <input type="number" value={form.year} onChange={(e) => setForm({ ...form, year: parseInt(e.target.value) })} className="input-anv" /></div>
+          <div>
+            <label className="form-label" htmlFor="paper-abstract">Abstract *</label>
+            <textarea id="paper-abstract" className="input-sacred" rows={4} value={form.abstract} onChange={e => set("abstract", e.target.value)} required />
           </div>
-          <div><label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>Citation</label>
-            <input type="text" value={form.citationText} onChange={(e) => setForm({ ...form, citationText: e.target.value })} className="input-anv" /></div>
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input type="checkbox" checked={form.peerReviewed} onChange={(e) => setForm({ ...form, peerReviewed: e.target.checked })} className="w-4 h-4 rounded" />
-            <span className="font-ui text-sm" style={{ color: "var(--muted)" }}>Peer-reviewed</span>
-          </label>
-          <div className="flex gap-3 pt-4">
-            <button type="submit" disabled={loading} className="btn-primary">{loading ? "Saving..." : "Save Paper"}</button>
-            <Link href="/admin/papers" className="btn-secondary">Cancel</Link>
+          <div>
+            <label className="form-label" htmlFor="paper-body">Full Text</label>
+            <textarea id="paper-body" className="input-sacred" rows={10} value={form.body} onChange={e => set("body", e.target.value)} placeholder="Full paper text or leave empty for PDF-only papers…" />
+          </div>
+          <div>
+            <label className="form-label" htmlFor="paper-keywords">Keywords (comma separated)</label>
+            <input id="paper-keywords" className="input-sacred" value={form.keywords} onChange={e => set("keywords", e.target.value)} placeholder="phenomenology, consciousness, Husserl" />
+          </div>
+          <LotusDivider className="my-4" />
+          <div className="flex gap-3">
+            <button type="submit" disabled={saving} className="btn-sacred btn-gold inline-flex items-center gap-2">
+              <Save size={14} /> {saving ? "Saving…" : "Create Paper"}
+            </button>
+            <Link href="/admin/papers" className="btn-sacred btn-ghost">Cancel</Link>
           </div>
         </form>
-      </div>
+      </main>
     </div>
   );
 }

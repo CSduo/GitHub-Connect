@@ -1,83 +1,71 @@
-"use client";
-
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Bookmark, BookOpen, FileText, X } from "lucide-react";
+import { LotusDivider, LotusIcon } from "@/components/sacred/LotusIcon";
+import { EmptyState } from "@/components/sacred/EmptyState";
 
-interface SavedItem {
-  slug: string;
-  title: string;
-  type: "article" | "paper";
-  savedAt: string;
-}
+const base = () => import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export default function SavedPage() {
-  const [saved, setSaved] = useState<SavedItem[]>([]);
+  const [, navigate] = useLocation();
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    try {
-      const data = JSON.parse(localStorage.getItem("anvikshiki_saved") || "[]");
-      setSaved(data);
-    } catch {
-      setSaved([]);
-    }
-  }, []);
+  const load = () => {
+    fetch(`${base()}/api/user/saved`, { credentials: "include" })
+      .then(r => { if (r.status === 401) { navigate("/login"); return null; } return r.json(); })
+      .then(d => d && (setItems(d.items || []), setLoading(false)))
+      .catch(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, []);
 
-  const removeSaved = (slug: string) => {
-    const updated = saved.filter((s) => s.slug !== slug);
-    setSaved(updated);
-    localStorage.setItem("anvikshiki_saved", JSON.stringify(updated));
+  const remove = async (id: string) => {
+    await fetch(`${base()}/api/user/saved/${id}`, { method: "DELETE", credentials: "include" });
+    load();
   };
 
   return (
-    <div className="min-h-[100dvh] pb-24" style={{ background: "var(--bg)" }}>
-      <div className="container-anv py-8 max-w-2xl">
-        <h1 className="font-display text-3xl md:text-4xl" style={{ color: "var(--ink)" }}>
-          Saved Reading
-        </h1>
-        <p className="font-body mt-2" style={{ color: "var(--muted)" }}>
-          Your personal reading list.
-        </p>
-
-        {saved.length === 0 ? (
-          <div className="text-center py-16">
-            <Bookmark size={48} className="mx-auto mb-4 opacity-30" style={{ color: "var(--muted)" }} />
-            <p className="font-body italic" style={{ color: "var(--muted)" }}>
-              No saved items yet. Browse essays and papers to save them here.
-            </p>
-            <Link href="/search" className="btn-primary mt-4 inline-flex">
-              Explore
-            </Link>
+    <div style={{ background: "var(--bg)", minHeight: "80vh" }}>
+      <div className="container-anv py-12 max-w-2xl mx-auto">
+        <div className="flex items-center gap-3 mb-8">
+          <Bookmark size={22} style={{ color: "var(--gold)" }} />
+          <h1 className="font-display text-3xl" style={{ color: "var(--gold-bright)" }}>Saved Items</h1>
+        </div>
+        <LotusDivider className="mb-8" />
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div style={{ width: 36, height: 36, border: "2px solid var(--border-gold)", borderTop: "2px solid var(--gold)", borderRadius: "50%", animation: "rotateSlow 0.8s linear infinite" }} role="status" aria-label="Loading" />
           </div>
+        ) : items.length === 0 ? (
+          <EmptyState
+            title="No saved items"
+            description="Bookmark essays and papers to revisit them here."
+            action={<Link href="/browse" className="btn-sacred btn-gold">Browse Content</Link>}
+          />
         ) : (
-          <div className="mt-6 space-y-3">
-            {saved.map((item) => (
-              <div
-                key={item.slug}
-                className="card-anv p-4 flex items-center gap-4"
-              >
-                {item.type === "article" ? (
-                  <BookOpen size={20} style={{ color: "var(--gold)" }} className="shrink-0" />
-                ) : (
-                  <FileText size={20} style={{ color: "var(--peacock)" }} className="shrink-0" />
-                )}
-                <Link
-                  href={`/${item.type}s/${item.slug}`}
-                  className="flex-1 min-w-0"
-                >
-                  <h4 className="font-display text-base truncate" style={{ color: "var(--ink)" }}>
-                    {item.title}
-                  </h4>
-                  <span className="font-ui text-[10px] uppercase tracking-wider" style={{ color: "var(--muted)" }}>
-                    {item.type}
-                  </span>
-                </Link>
-                <button
-                  onClick={() => removeSaved(item.slug)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center transition-colors shrink-0"
-                  style={{ background: "var(--surface-soft)" }}
-                >
-                  <X size={14} style={{ color: "var(--muted)" }} />
+          <div className="space-y-3">
+            {items.map(item => (
+              <div key={item.id} className="card-sacred p-4 flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  {item.itemType === "PAPER"
+                    ? <FileText size={18} style={{ color: "var(--gold)", flexShrink: 0 }} />
+                    : <BookOpen size={18} style={{ color: "var(--gold)", flexShrink: 0 }} />}
+                  <div>
+                    <Link
+                      href={item.itemType === "PAPER" ? `/papers/${item.slug || item.itemId}` : `/articles/${item.slug || item.itemId}`}
+                      className="font-ui text-sm font-semibold hover:opacity-80 transition-opacity"
+                      style={{ color: "var(--ink-soft)" }}
+                    >
+                      {item.title || item.itemId}
+                    </Link>
+                    <div className="font-ui text-xs mt-0.5" style={{ color: "var(--muted)" }}>
+                      <span className="badge badge-draft" style={{ fontSize: "0.6rem" }}>{item.itemType}</span>
+                      {" "}{item.savedAt ? new Date(item.savedAt).toLocaleDateString("en-IN") : ""}
+                    </div>
+                  </div>
+                </div>
+                <button type="button" onClick={() => remove(item.id)} className="shrink-0 p-1.5 rounded-md hover:bg-rose transition-colors" style={{ color: "var(--muted)" }} title="Remove" aria-label="Remove saved item">
+                  <X size={14} />
                 </button>
               </div>
             ))}

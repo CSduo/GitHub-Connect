@@ -1,162 +1,121 @@
-import { useLocation } from 'wouter';
-"use client";
-
 import { useState } from "react";
-import { Link } from "wouter";
-;
-import { Mail, Lock, ArrowRight, Bookmark, FileText, Feather } from "lucide-react";
-import { toast } from "sonner";
+import { useLocation, Link } from "wouter";
+import { Globe } from "lucide-react";
+import { LotusDivider, LotusIcon } from "@/components/sacred/LotusIcon";
 import { Emblem } from "@/components/brand/Emblem";
+
+const base = () => import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export default function LoginPage() {
   const [, navigate] = useLocation();
-  const [mode, setMode] = useState<"login" | "signup">("login");
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [tab, setTab] = useState<"login"|"signup">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-
     try {
-      const endpoint = mode === "login" ? "/api/auth/login" : "/api/auth/signup";
-      const body = mode === "login"
-        ? { email: form.email, password: form.password }
-        : { name: form.name, email: form.email, password: form.password };
-
-      const res = await fetch(endpoint, {
+      const endpoint = tab === "login" ? "/api/auth/login" : "/api/auth/register";
+      const body = tab === "login" ? { email, password } : { email, password, name };
+      const r = await fetch(`${base()}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        credentials: "include",
       });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        toast.success(mode === "login" ? "Welcome back!" : "Account created!");
-        navigate("/account");
-      } else {
-        toast.error(data.error || "Something went wrong");
-      }
-    } catch {
-      toast.error("Failed to connect");
-    } finally {
-      setLoading(false);
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Authentication failed");
+      navigate("/account");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
     }
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-[100dvh] pb-24" style={{ background: "var(--bg)" }}>
-      <div className="container-anv py-8">
-        <div className="max-w-md mx-auto">
-          {/* Brand */}
-          <div className="text-center mb-8">
-            <Emblem size={56} className="mx-auto mb-4" />
-            <h1 className="font-display text-3xl" style={{ color: "var(--ink)" }}>
-              {mode === "login" ? "Sign in to continue" : "Create your account"}
-            </h1>
-            <p className="font-body text-sm mt-2" style={{ color: "var(--muted)" }}>
-              {mode === "login" ? "your inquiry" : "Join Anvikshiki"}
-            </p>
+    <div style={{ background: "var(--bg)", minHeight: "80vh", display: "flex", alignItems: "center" }}>
+      {/* Background */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 30% 50%, rgba(139,26,74,0.15) 0%, transparent 55%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 75% 40%, rgba(74,40,120,0.12) 0%, transparent 50%)" }} />
+      </div>
+
+      <div className="container-anv relative z-10 py-16 flex justify-center">
+        <div className="w-full max-w-sm">
+          {/* Logo */}
+          <div className="flex flex-col items-center mb-8">
+            <Emblem size={56} className="mb-3 animate-float" />
+            <div className="font-display text-2xl tracking-[0.15em]" style={{ color: "var(--gold-bright)" }}>ĀNVĪKṢIKĪ</div>
+            <LotusIcon size={14} className="mt-2" style={{ color: "var(--gold)", opacity: 0.5 }} />
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === "signup" && (
-              <div>
-                <label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>
-                  Full Name
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="input-anv pl-10"
-                    placeholder="Your name"
-                    required
-                  />
-                </div>
-              </div>
-            )}
-
-            <div>
-              <label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>
-                Email address
-              </label>
-              <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--muted)" }} />
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="input-anv pl-10"
-                  placeholder="you@example.com"
-                  required
-                />
-              </div>
+          <div className="card-sacred p-6" style={{ background: "var(--surface-2)" }}>
+            {/* Tabs */}
+            <div className="flex mb-6" style={{ borderBottom: "1px solid var(--border)" }}>
+              {(["login","signup"] as const).map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => { setTab(t); setError(""); }}
+                  className="flex-1 py-2 font-ui text-sm font-semibold transition-colors"
+                  style={{ color: tab === t ? "var(--gold-bright)" : "var(--muted)", borderBottom: `2px solid ${tab === t ? "var(--gold)" : "transparent"}`, background: "none", border: "none", cursor: "pointer", borderBottom: `2px solid ${tab === t ? "var(--gold)" : "transparent"}` }}
+                >
+                  {t === "login" ? "Sign In" : "Create Account"}
+                </button>
+              ))}
             </div>
 
-            <div>
-              <label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>
-                Password
-              </label>
-              <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--muted)" }} />
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="input-anv pl-10"
-                  placeholder="Enter your password"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            <button type="submit" disabled={loading} className="btn-primary w-full">
-              {loading ? "Please wait..." : mode === "login" ? "Continue with email" : "Create account"}
-              <ArrowRight size={16} />
-            </button>
-          </form>
-
-          {/* Toggle */}
-          <div className="text-center mt-6">
+            {/* Google placeholder */}
             <button
-              onClick={() => setMode(mode === "login" ? "signup" : "login")}
-              className="font-ui text-sm transition-colors hover:text-[var(--gold)]"
-              style={{ color: "var(--muted)" }}
+              type="button"
+              className="w-full flex items-center justify-center gap-2 py-2.5 mb-4 rounded-lg font-ui text-sm transition-all"
+              style={{ border: "1px solid var(--border-gold)", background: "var(--surface-3)", color: "var(--ink-soft)" }}
+              onClick={() => alert("Google login will be available soon.")}
             >
-              {mode === "login" ? "Don't have an account? Create one" : "Already have an account? Sign in"}
+              <Globe size={16} style={{ color: "var(--gold)" }} />
+              Continue with Google (Coming Soon)
             </button>
+
+            <LotusDivider className="mb-4" />
+
+            <form onSubmit={submit} className="space-y-4">
+              {tab === "signup" && (
+                <div>
+                  <label className="form-label" htmlFor="name">Full Name</label>
+                  <input id="name" type="text" className="input-sacred" placeholder="Arjun Sharma" value={name} onChange={e => setName(e.target.value)} required />
+                </div>
+              )}
+              <div>
+                <label className="form-label" htmlFor="email">Email</label>
+                <input id="email" type="email" className="input-sacred" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
+              </div>
+              <div>
+                <label className="form-label" htmlFor="password">Password</label>
+                <input id="password" type="password" className="input-sacred" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} />
+              </div>
+
+              {error && <p className="font-ui text-xs" style={{ color: "var(--lotus)" }} role="alert">{error}</p>}
+
+              <button type="submit" className="btn-sacred btn-gold w-full justify-center mt-2" disabled={loading}>
+                {loading ? "…" : tab === "login" ? "Sign In" : "Create Account"}
+              </button>
+            </form>
+
+            {tab === "login" && (
+              <p className="font-ui text-xs text-center mt-4" style={{ color: "var(--muted)" }}>
+                Don't have an account? <button type="button" onClick={() => setTab("signup")} style={{ color: "var(--gold)", background: "none", border: "none", cursor: "pointer", fontSize: "inherit" }}>Sign up</button>
+              </p>
+            )}
           </div>
 
-          {/* Benefits */}
-          {mode === "signup" && (
-            <div
-              className="mt-8 p-5 rounded-2xl"
-              style={{ background: "var(--surface-soft)", border: "1px solid var(--border)" }}
-            >
-              <h3 className="font-ui text-xs font-semibold tracking-wider uppercase text-center mb-4" style={{ color: "var(--gold)" }}>
-                Your space for knowledge and ideas
-              </h3>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <Bookmark size={20} className="mx-auto mb-2" style={{ color: "var(--gold)" }} />
-                  <p className="font-ui text-xs font-medium" style={{ color: "var(--ink)" }}>Saved essays</p>
-                </div>
-                <div>
-                  <FileText size={20} className="mx-auto mb-2" style={{ color: "var(--gold)" }} />
-                  <p className="font-ui text-xs font-medium" style={{ color: "var(--ink)" }}>Papers archive</p>
-                </div>
-                <div>
-                  <Feather size={20} className="mx-auto mb-2" style={{ color: "var(--gold)" }} />
-                  <p className="font-ui text-xs font-medium" style={{ color: "var(--ink)" }}>Submissions</p>
-                </div>
-              </div>
-            </div>
-          )}
+          <p className="text-center font-ui text-xs mt-4" style={{ color: "var(--ink-faint)" }}>
+            By continuing, you agree to our <Link href="/terms" style={{ color: "var(--gold)" }}>Terms</Link> and <Link href="/privacy" style={{ color: "var(--gold)" }}>Privacy Policy</Link>.
+          </p>
         </div>
       </div>
     </div>

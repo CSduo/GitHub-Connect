@@ -1,48 +1,70 @@
 import { useState, useEffect } from "react";
-import { Link, useParams, useLocation } from "wouter";
-import { ArrowLeft, Calendar, Download, Bookmark, Share2 } from "lucide-react";
+import { Link, useRoute } from "wouter";
+import { ArrowLeft, Download } from "lucide-react";
+import { LotusDivider, LotusIcon } from "@/components/sacred/LotusIcon";
+import { EmptyState } from "@/components/sacred/EmptyState";
 
-export default function PaperPage() {
-  const params = useParams<{ slug: string }>();
-  const [, navigate] = useLocation();
+const base = () => import.meta.env.BASE_URL.replace(/\/$/, "");
+
+export default function PaperDetailPage() {
+  const [, params] = useRoute("/papers/:slug");
+  const slug = params?.slug || "";
   const [paper, setPaper] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (!params.slug) return;
-    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-    fetch(`${base}/api/papers/${params.slug}`)
-      .then(r => { if (!r.ok) navigate("/papers"); return r.json(); })
-      .then(data => { setPaper(data.paper); setLoading(false); })
-      .catch(() => navigate("/papers"));
-  }, [params.slug]);
+    if (!slug) return;
+    fetch(`${base()}/api/papers/${slug}`)
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(d => { setPaper(d.paper || d); setLoading(false); })
+      .catch(() => { setError(true); setLoading(false); });
+  }, [slug]);
 
-  if (loading) return <div className="container-anv pt-16 text-center"><p className="font-body italic" style={{ color: "var(--muted)" }}>Loading…</p></div>;
-  if (!paper) return null;
+  if (loading) return (
+    <div style={{ background: "var(--bg)", minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ width: 40, height: 40, border: "2px solid var(--border-gold)", borderTop: "2px solid var(--gold)", borderRadius: "50%", animation: "rotateSlow 0.8s linear infinite" }} role="status" aria-label="Loading" />
+    </div>
+  );
+  if (error || !paper) return (
+    <div style={{ background: "var(--bg)", minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <EmptyState title="Paper not found" action={<Link href="/papers" className="btn-sacred btn-gold">Back to Papers</Link>} />
+    </div>
+  );
 
   return (
-    <div className="min-h-[100dvh] pb-24" style={{ background: "var(--bg)" }}>
-      <div className="container-anv pt-4">
-        <Link href="/papers" className="inline-flex items-center gap-2 font-ui text-sm" style={{ color: "var(--muted)" }}><ArrowLeft size={16} /> Back to Papers</Link>
-      </div>
-      <article className="container-anv pt-6 pb-12">
-        <div className="max-w-[var(--max-reader)] mx-auto">
-          <div className="flex items-center gap-3 mb-4">
-            {paper.peerReviewed && <span className="status-badge status-published">Peer-Reviewed</span>}
-            <span className="font-ui text-xs uppercase tracking-wider" style={{ color: "var(--gold)" }}>{paper.paperType?.replace(/_/g, " ")}</span>
-          </div>
-          <h1 className="font-display text-3xl md:text-5xl leading-[0.95]" style={{ color: "var(--ink)" }}>{paper.title}</h1>
-          {paper.authorName && <p className="font-ui text-sm mt-4" style={{ color: "var(--muted)" }}>{paper.authorName}{paper.year && ` · ${paper.year}`}{paper.doi && ` · DOI: ${paper.doi}`}</p>}
-          <div className="flex items-center gap-3 py-6">
-            {paper.pdfUrl && <a href={paper.pdfUrl} target="_blank" rel="noopener noreferrer" className="btn-primary"><Download size={16} /> Download PDF</a>}
-            <button className="btn-secondary"><Bookmark size={14} /> Save</button>
-            <button className="btn-secondary"><Share2 size={14} /> Cite</button>
-          </div>
-          {paper.abstract && <div className="p-6 rounded-2xl mt-4" style={{ background: "var(--surface-soft)", border: "1px solid var(--border)" }}><h3 className="font-ui text-xs font-semibold tracking-[0.15em] uppercase mb-3" style={{ color: "var(--gold)" }}>Abstract</h3><p className="font-body" style={{ color: "var(--ink)" }}>{paper.abstract}</p></div>}
-          {paper.citationText && <div className="mt-6 p-4 rounded-xl" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}><h3 className="font-ui text-xs font-semibold tracking-wider uppercase mb-2" style={{ color: "var(--gold)" }}>Citation</h3><p className="font-body text-sm italic" style={{ color: "var(--muted)" }}>{paper.citationText}</p></div>}
-          {paper.body && <div className="article-body mt-8" dangerouslySetInnerHTML={{ __html: paper.body.replace(/\n/g, "<br/>") }} />}
+    <div style={{ background: "var(--bg)" }}>
+      <div className="container-anv py-12 max-w-3xl mx-auto">
+        <Link href="/papers" className="flex items-center gap-1.5 mb-8 font-ui text-xs hover:opacity-70" style={{ color: "var(--ink-faint)" }}>
+          <ArrowLeft size={12} /> Back to Papers
+        </Link>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="badge badge-published">Paper</span>
+          {paper.peerReviewed && <span className="badge badge-approved">Peer Reviewed</span>}
+          {paper.year && <span className="font-ui text-xs" style={{ color: "var(--muted)" }}>{paper.year}</span>}
         </div>
-      </article>
+        <h1 className="font-display mb-4 leading-tight" style={{ fontSize: "clamp(1.75rem, 4vw, 2.75rem)", color: "var(--gold-bright)" }}>{paper.title}</h1>
+        {paper.authorName && <p className="font-ui text-sm mb-6" style={{ color: "var(--muted)" }}>by {paper.authorName}</p>}
+        <LotusDivider className="mb-6" />
+        {paper.abstract && (
+          <div className="mb-6">
+            <div className="section-label mb-2">Abstract</div>
+            <p className="font-body text-base leading-relaxed" style={{ color: "var(--ink-soft)" }}>{paper.abstract}</p>
+          </div>
+        )}
+        {paper.body && <div className="font-body text-base leading-loose whitespace-pre-wrap mb-6" style={{ color: "var(--ink-soft)" }}>{paper.body}</div>}
+        {paper.pdfUrl && (
+          <a href={paper.pdfUrl} target="_blank" rel="noopener noreferrer" className="btn-sacred btn-gold inline-flex items-center gap-2">
+            <Download size={14} /> Download PDF
+          </a>
+        )}
+        {paper.citationText && (
+          <div className="mt-8 p-4 rounded-lg" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
+            <div className="section-label mb-2">Citation</div>
+            <p className="font-body text-xs" style={{ color: "var(--ink-faint)" }}>{paper.citationText}</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

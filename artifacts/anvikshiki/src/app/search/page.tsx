@@ -1,251 +1,115 @@
-"use client";
-
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "wouter";
-import { Search, Mic, FileText, BookOpen, Tag, ArrowRight } from "lucide-react";
-import { DomainGrid } from "@/components/shared/DomainGrid";
+import { Link, useLocation } from "wouter";
+import { Search, ArrowRight, X } from "lucide-react";
+import { LotusDivider, LotusIcon } from "@/components/sacred/LotusIcon";
+import { EmptyState } from "@/components/sacred/EmptyState";
 
-const FILTERS = ["All", "Essays", "Papers", "Domains", "Archive"];
+const base = () => import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [results, setResults] = useState<any>(null);
+  const [loc] = useLocation();
+  const initQ = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("q") || "" : "";
+  const [query, setQuery] = useState(initQ);
+  const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
 
-  const performSearch = useCallback(async (q: string) => {
-    if (!q.trim() || q.length < 2) {
-      setResults(null);
-      return;
-    }
+  const doSearch = useCallback(async (q: string) => {
+    if (!q.trim()) { setResults([]); setSearched(false); return; }
     setLoading(true);
+    setSearched(true);
     try {
-      const res = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/search?q=${encodeURIComponent(q)}`);
-      const data = await res.json();
-      setResults(data);
-    } catch {
-      setResults({ articles: [], papers: [], categories: [], query: q });
-    } finally {
-      setLoading(false);
-    }
+      const r = await fetch(`${base()}/api/search?q=${encodeURIComponent(q)}&limit=20`);
+      const d = await r.json();
+      setResults([...(d.articles || []).map((a: any) => ({ ...a, kind: "essay" })), ...(d.papers || []).map((p: any) => ({ ...p, kind: "paper" }))]);
+    } catch { setResults([]); }
+    setLoading(false);
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => performSearch(query), 300);
-    return () => clearTimeout(timer);
-  }, [query, performSearch]);
+  useEffect(() => { if (initQ) doSearch(initQ); }, [initQ, doSearch]);
 
-  const filteredArticles = activeFilter === "All" || activeFilter === "Essays" ? results?.articles || [] : [];
-  const filteredPapers = activeFilter === "All" || activeFilter === "Papers" ? results?.papers || [] : [];
-  const filteredCategories = activeFilter === "All" || activeFilter === "Domains" ? results?.categories || [] : [];
-
-  const hasResults = filteredArticles.length > 0 || filteredPapers.length > 0 || filteredCategories.length > 0;
+  const onSubmit = (e: React.FormEvent) => { e.preventDefault(); doSearch(query); };
 
   return (
-    <div className="min-h-[100dvh] pb-24" style={{ background: "var(--bg)" }}>
-
-      {/* Hero banner with background image */}
-      <div className="container-anv pt-3 pb-5">
-        <div className="card-anv overflow-hidden">
-          <div
-            className="relative flex flex-col justify-end p-6 md:p-8 bg-cover bg-center"
-            style={{
-              minHeight: "180px",
-              backgroundImage: "url('/homepage_hero.jpg')",
-            }}
-          >
-            <div
-              className="absolute inset-0"
-              style={{
-                background: "linear-gradient(to right, color-mix(in srgb, var(--bg) 88%, transparent) 0%, color-mix(in srgb, var(--bg) 40%, transparent) 55%, transparent 100%)",
-              }}
-            />
-            <div className="relative z-10">
-              <h1 className="font-display text-4xl md:text-5xl" style={{ color: "var(--ink)" }}>
-                Search
-              </h1>
-              <p className="font-body text-sm italic mt-1" style={{ color: "var(--muted)" }}>
-                Discover ideas across time and disciplines.
-              </p>
+    <div style={{ background: "var(--bg)", minHeight: "80vh" }}>
+      {/* Hero */}
+      <div className="relative overflow-hidden" style={{ minHeight: 260 }}>
+        <div className="absolute inset-0" aria-hidden="true">
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #0a0810 0%, #10081a 100%)" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 80, background: "linear-gradient(180deg, transparent, var(--bg))" }} />
+        </div>
+        <div className="container-anv relative z-10 flex flex-col items-center text-center py-14">
+          <LotusIcon size={24} className="mb-4" style={{ color: "var(--gold)", opacity: 0.6 }} />
+          <h1 className="font-display mb-6" style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", color: "var(--gold-bright)", letterSpacing: "0.1em" }}>Search</h1>
+          <form onSubmit={onSubmit} className="w-full max-w-lg" role="search">
+            <div className="relative">
+              <Search size={18} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} aria-hidden="true" />
+              <input
+                type="search"
+                className="input-sacred"
+                style={{ paddingLeft: "2.75rem", paddingRight: "3rem", fontSize: "1rem", height: 52 }}
+                placeholder="Search essays, papers, authors…"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                autoFocus
+                aria-label="Search the journal"
+              />
+              {query && (
+                <button type="button" onClick={() => { setQuery(""); setResults([]); setSearched(false); }} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "var(--muted)" }} aria-label="Clear search">
+                  <X size={16} />
+                </button>
+              )}
             </div>
-          </div>
+            <button type="submit" className="btn-sacred btn-gold mt-3 w-full justify-center">Search</button>
+          </form>
         </div>
       </div>
 
-      <div className="container-anv">
-        {/* Search input */}
-        <div className="relative">
-          <Search
-            size={18}
-            className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-            style={{ color: "var(--muted)" }}
-          />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search essays, papers, domains, authors..."
-            className="input-anv pl-11 pr-11 py-3.5 text-base w-full"
-          />
-          <button
-            className="absolute right-4 top-1/2 -translate-y-1/2"
-            aria-label="Voice search"
-          >
-            <Mic size={18} style={{ color: "var(--muted)" }} />
-          </button>
-        </div>
-
-        {/* Filter tabs */}
-        <div className="flex gap-2 mt-4 overflow-x-auto pb-1 scrollbar-none">
-          {FILTERS.map((f) => (
-            <button
-              key={f}
-              onClick={() => setActiveFilter(f)}
-              className="px-4 py-2 rounded-full font-ui text-sm font-medium whitespace-nowrap transition-all shrink-0"
-              style={{
-                background: activeFilter === f ? "var(--gold)" : "var(--surface)",
-                color: activeFilter === f ? "#1a1108" : "var(--ink)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-
-        {/* Loading spinner */}
-        {loading && (
-          <div className="py-12 text-center">
-            <div className="w-8 h-8 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin mx-auto" />
+      {/* Results */}
+      <div className="container-anv pb-16 max-w-3xl mx-auto">
+        <LotusDivider className="mb-6" />
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div style={{ width: 36, height: 36, border: "2px solid var(--border-gold)", borderTop: "2px solid var(--gold)", borderRadius: "50%", animation: "rotateSlow 0.8s linear infinite" }} role="status" aria-label="Searching" />
           </div>
-        )}
-
-        {/* Empty state — show domain grid + popular discoveries */}
-        {!loading && !results && (
-          <div className="mt-6 space-y-6">
-            {/* Browse by domain */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="font-ui text-[11px] font-semibold tracking-[0.18em] uppercase" style={{ color: "var(--gold)" }}>
-                  Explore by Domain
-                </h2>
-                <Link href="/" className="font-ui text-[11px] font-medium flex items-center gap-1 transition-colors hover:opacity-70" style={{ color: "var(--gold)" }}>
-                  View all <ArrowRight size={12} />
+        ) : searched && results.length === 0 ? (
+          <EmptyState
+            title={`No results for "${query}"`}
+            description="Try different keywords or browse all domains."
+            action={<Link href="/browse" className="btn-sacred btn-ghost">Browse Domains</Link>}
+          />
+        ) : results.length > 0 ? (
+          <div>
+            <div className="font-ui text-xs mb-4" style={{ color: "var(--muted)" }}>{results.length} result{results.length !== 1 ? "s" : ""} for "{query}"</div>
+            <div className="space-y-3">
+              {results.map(r => (
+                <Link key={`${r.kind}-${r.id}`} href={r.kind === "paper" ? `/papers/${r.slug || r.id}` : `/articles/${r.slug || r.id}`}>
+                  <div className="card-sacred p-5 cursor-pointer flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className={`badge ${r.kind === "paper" ? "badge-published" : "badge-approved"}`}>{r.kind}</span>
+                        {r.categoryId && <span className="font-ui text-[10px]" style={{ color: "var(--muted)" }}>{r.categoryId}</span>}
+                      </div>
+                      <h3 className="font-display text-xl leading-tight" style={{ color: "var(--parchment)" }}>{r.title}</h3>
+                      {r.excerpt && <p className="font-body text-sm mt-1 line-clamp-2" style={{ color: "var(--ink-faint)" }}>{r.excerpt}</p>}
+                      {r.authorName && <p className="font-ui text-xs mt-2" style={{ color: "var(--muted)" }}>{r.authorName}</p>}
+                    </div>
+                    <ArrowRight size={16} style={{ color: "var(--gold)", flexShrink: 0, marginTop: 4 }} />
+                  </div>
                 </Link>
-              </div>
-              <DomainGrid />
-            </div>
-
-            {/* Popular discoveries banner */}
-            <div
-              className="rounded-[20px] overflow-hidden flex min-h-[160px]"
-              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-            >
-              <div className="flex-1 p-5 md:p-6">
-                <span className="font-ui text-[10px] font-semibold tracking-[0.18em] uppercase flex items-center gap-1.5" style={{ color: "var(--gold)" }}>
-                  <span>✦</span> Popular Discoveries
-                </span>
-                <h3 className="font-display text-2xl md:text-3xl mt-2 leading-tight" style={{ color: "var(--ink)" }}>
-                  Timeless ideas.<br />Endless perspectives.
-                </h3>
-                <p className="font-body text-sm mt-2" style={{ color: "var(--muted)" }}>
-                  Explore what&apos;s resonating across our community.
-                </p>
-                <button
-                  onClick={() => setQuery("philosophy")}
-                  className="btn-primary mt-4 text-sm py-2.5 px-5"
-                >
-                  Explore Now <ArrowRight size={14} />
-                </button>
-              </div>
-              {/* Right archway image */}
-              <div
-                className="hidden md:block w-52 shrink-0 bg-cover bg-center rounded-r-[20px]"
-                style={{ backgroundImage: "url('/papers_hero.jpg')" }}
-              />
+              ))}
             </div>
           </div>
-        )}
-
-        {/* Search results */}
-        {!loading && results && (
-          <div className="py-6 space-y-6">
-            {!hasResults && (
-              <div className="text-center py-12">
-                <p className="font-body" style={{ color: "var(--muted)" }}>
-                  No results found for &ldquo;{results.query}&rdquo;
-                </p>
-              </div>
-            )}
-
-            {filteredArticles.length > 0 && (
-              <div>
-                <h3 className="font-ui text-xs font-semibold tracking-[0.15em] uppercase mb-3" style={{ color: "var(--gold)" }}>Essays</h3>
-                <div className="space-y-3">
-                  {filteredArticles.map((a: any) => (
-                    <Link
-                      key={a.id}
-                      href={`/articles/${a.slug}`}
-                      className="card-anv p-4 flex gap-4 items-start hover:translate-y-[-2px] transition-all block"
-                    >
-                      <BookOpen size={20} className="mt-1 shrink-0" style={{ color: "var(--gold)" }} />
-                      <div>
-                        <h4 className="font-display text-lg" style={{ color: "var(--ink)" }}>{a.title}</h4>
-                        {a.excerpt && (
-                          <p className="font-body text-sm mt-1 line-clamp-2" style={{ color: "var(--muted)" }}>{a.excerpt}</p>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {filteredPapers.length > 0 && (
-              <div>
-                <h3 className="font-ui text-xs font-semibold tracking-[0.15em] uppercase mb-3" style={{ color: "var(--gold)" }}>Papers</h3>
-                <div className="space-y-3">
-                  {filteredPapers.map((p: any) => (
-                    <Link
-                      key={p.id}
-                      href={`/papers/${p.slug}`}
-                      className="card-anv p-4 flex gap-4 items-start hover:translate-y-[-2px] transition-all block"
-                    >
-                      <FileText size={20} className="mt-1 shrink-0" style={{ color: "var(--sage)" }} />
-                      <div>
-                        <h4 className="font-display text-lg" style={{ color: "var(--ink)" }}>{p.title}</h4>
-                        {p.abstract && (
-                          <p className="font-body text-sm mt-1 line-clamp-2" style={{ color: "var(--muted)" }}>{p.abstract}</p>
-                        )}
-                        {p.peerReviewed && (
-                          <span className="status-badge status-published text-[10px] mt-2 inline-block">Peer-Reviewed</span>
-                        )}
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {filteredCategories.length > 0 && (
-              <div>
-                <h3 className="font-ui text-xs font-semibold tracking-[0.15em] uppercase mb-3" style={{ color: "var(--gold)" }}>Domains</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {filteredCategories.map((c: any) => (
-                    <Link
-                      key={c.id}
-                      href={`/categories/${c.slug}`}
-                      className="card-anv p-4 text-center hover:translate-y-[-2px] transition-all block"
-                    >
-                      <Tag size={18} className="mx-auto mb-2" style={{ color: "var(--gold)" }} />
-                      <span className="font-ui text-sm font-medium" style={{ color: "var(--ink)" }}>{c.name}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
+        ) : !searched ? (
+          <div className="text-center py-10">
+            <div className="section-label mb-6">Browse by Domain</div>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {["Philosophy","History","Psychology","Sociology","Science","Geopolitics","Civilizational Thought","Aesthetics","Sanskrit Studies"].map(d => (
+                <Link key={d} href={`/domains/${d.toLowerCase().replace(/\s+/g, "-")}`} className="btn-sacred btn-ghost text-xs py-1.5 px-4">{d}</Link>
+              ))}
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

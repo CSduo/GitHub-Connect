@@ -1,64 +1,71 @@
-import { useState, useEffect } from "react";
+import { Link } from "wouter";
+import { ArrowRight } from "lucide-react";
+import { LotusDivider, LotusIcon, TrishulIcon } from "@/components/sacred/LotusIcon";
 import { Emblem } from "@/components/brand/Emblem";
-import { DomainGrid } from "@/components/shared/DomainGrid";
 
 export default function AboutPage() {
-  const [categories, setCategories] = useState<any[]>([]);
-
-  useEffect(() => {
-    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-    fetch(`${base}/api/categories`).then(r => r.json()).then(d => setCategories(d.categories || [])).catch(() => {});
-  }, []);
-
   return (
-    <div className="min-h-[100dvh] pb-24" style={{ background: "var(--bg)" }}>
-      <div className="container-anv pt-3 pb-5">
-        <div className="card-anv overflow-hidden">
-          <div className="relative flex flex-col justify-end p-6 md:p-10 bg-cover bg-center" style={{ minHeight: "260px", backgroundImage: "url('/about_hero.jpg')" }}>
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(7,17,21,0.85) 0%, rgba(7,17,21,0.4) 50%, rgba(7,17,21,0.1) 100%)" }} />
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2"><div className="h-[1px] w-8" style={{ background: "#d5aa61" }} /><span style={{ color: "#d5aa61", fontSize: "12px" }}>✦</span></div>
-              <h1 className="font-display text-3xl md:text-4xl lg:text-5xl" style={{ color: "#f5f5f5" }}>About Ānvīkṣikī</h1>
-              <p className="font-body text-sm italic mt-1.5" style={{ color: "rgba(245,245,245,0.7)" }}>A platform for thoughtful inquiry across timeless disciplines.</p>
-            </div>
-          </div>
+    <div style={{ background: "var(--bg)" }}>
+      {/* Hero */}
+      <div className="relative overflow-hidden" style={{ minHeight: 360 }}>
+        <div className="absolute inset-0" aria-hidden="true">
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #0f0820 0%, #0a0518 50%, #0f0a20 100%)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 30% 50%, rgba(139,26,74,0.25) 0%, transparent 55%)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 75% 40%, rgba(74,40,120,0.20) 0%, transparent 50%)" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 100, background: "linear-gradient(180deg, transparent, var(--bg))" }} />
+        </div>
+        <div className="container-anv relative z-10 flex flex-col items-center text-center py-20">
+          <Emblem size={72} className="mb-6 animate-float" />
+          <div className="section-label mb-3">Our Mission</div>
+          <h1 className="font-display mb-4" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)", color: "var(--gold-bright)", letterSpacing: "0.12em" }}>About Ānvīkṣikī</h1>
+          <LotusIcon size={18} className="mb-4" style={{ color: "var(--gold)", opacity: 0.6 }} />
+          <p className="font-body text-lg max-w-2xl leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+            A journal of inquiry, civilizational wisdom, and dharmic thought — illuminating ideas at the intersection of philosophy, history, science, and living tradition.
+          </p>
         </div>
       </div>
-      <div className="container-anv space-y-6 pb-8">
-        <div className="rounded-2xl p-5 md:p-6" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(169,59,90,0.12)", border: "1px solid rgba(169,59,90,0.2)" }}>
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><path d="M16 28 C8 22 6 14 10 10 C12 8 14 10 16 14 C18 10 20 8 22 10 C26 14 24 22 16 28Z" fill="none" stroke="#a93b5a" strokeWidth="1.5" /><path d="M16 28 C10 22 6 16 8 12 C10 8 12 12 16 16 C20 12 22 8 24 12 C26 16 22 22 16 28Z" fill="none" stroke="#a93b5a" strokeWidth="1.5" opacity="0.6" /><circle cx="16" cy="16" r="3" fill="#a93b5a" opacity="0.4" /></svg>
+
+      {/* Mission section */}
+      <div className="container-anv py-16 max-w-3xl mx-auto">
+        <LotusDivider className="mb-10" />
+        <div className="prose-sacred space-y-6">
+          <p className="font-body text-lg leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+            <strong style={{ color: "var(--gold-bright)" }}>Ānvīkṣikī</strong> — the ancient Sanskrit word for the philosophical examination of truth — is a journal dedicated to the rigorous and beautiful study of ideas.
+          </p>
+          <p className="font-body text-base leading-relaxed" style={{ color: "var(--ink-faint)" }}>
+            We publish essays, research papers, translations, and commentary across philosophy, history, psychology, sociology, science, geopolitics, civilizational thought, and the Sanskrit tradition. Our mission is to bridge timeless wisdom with contemporary inquiry.
+          </p>
+          <p className="font-body text-base leading-relaxed" style={{ color: "var(--ink-faint)" }}>
+            Every work on this platform has been carefully reviewed for intellectual rigor, clarity of thought, and depth of understanding. We believe that great ideas deserve both careful scholarship and beautiful presentation.
+          </p>
+        </div>
+
+        <LotusDivider className="my-12" />
+
+        {/* Values */}
+        <div className="grid sm:grid-cols-3 gap-6 mb-12">
+          {[
+            { icon: "🕉️", title: "Inquiry", desc: "We honour the ancient practice of systematic questioning — ānvīkṣikī — as the foundation of all wisdom." },
+            { icon: "📜", title: "Tradition", desc: "Rooted in the dharmic traditions while engaging critically with all civilizational thought." },
+            { icon: "✨", title: "Illumination", desc: "Making complex ideas accessible, beautiful, and transformative for seekers of all backgrounds." },
+          ].map(v => (
+            <div key={v.title} className="card-sacred p-6 text-center">
+              <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem", filter: "drop-shadow(0 0 8px rgba(201,152,58,0.3))" }}>{v.icon}</div>
+              <h3 className="font-display text-xl mb-2" style={{ color: "var(--gold-bright)" }}>{v.title}</h3>
+              <p className="font-body text-sm leading-relaxed" style={{ color: "var(--ink-faint)" }}>{v.desc}</p>
             </div>
-            <div className="flex-1">
-              <span className="font-ui text-[10px] font-semibold tracking-[0.18em] uppercase" style={{ color: "var(--rose)" }}>Our Mission</span>
-              <h2 className="font-display text-2xl md:text-3xl mt-2 leading-tight" style={{ color: "var(--ink)" }}>Cultivate clarity.<br />Inspire understanding.</h2>
-            </div>
-          </div>
-          <p className="font-body text-sm mt-4 leading-relaxed" style={{ color: "var(--muted)" }}>We publish rigorous, reflective, and timeless ideas that deepen understanding and elevate discourse.</p>
+          ))}
         </div>
-        <div style={{ borderLeft: "3px solid var(--gold)", paddingLeft: "16px" }}>
-          <span className="font-ui text-[10px] font-semibold tracking-[0.18em] uppercase" style={{ color: "var(--gold)" }}>What is Ānvīkṣikī?</span>
-        </div>
-        <div className="flex gap-5 items-start">
-          <div className="shrink-0"><Emblem size={72} /></div>
-          <div className="space-y-3">
-            <p className="font-body text-sm leading-relaxed" style={{ color: "var(--ink)" }}>Ānvīkṣikī (आन्वीक्षिकी) is the science of inquiry — a tradition of critical reflection, reasoned exploration, and the pursuit of truth.</p>
-            <p className="font-body text-sm leading-relaxed" style={{ color: "var(--muted)" }}>Rooted in classical wisdom, it embraces all disciplines that illuminate how we think, understand, and live.</p>
-          </div>
-        </div>
-        <div>
-          <div style={{ borderLeft: "3px solid var(--gold)", paddingLeft: "16px", marginBottom: "16px" }}>
-            <span className="font-ui text-[10px] font-semibold tracking-[0.18em] uppercase" style={{ color: "var(--gold)" }}>Disciplines We Explore</span>
-          </div>
-          <DomainGrid categories={categories} />
-        </div>
-        <div className="rounded-2xl p-5 flex items-center gap-4" style={{ background: "var(--surface-soft)", border: "1px solid var(--border)" }}>
-          <svg width="44" height="44" viewBox="0 0 44 44" fill="none" className="shrink-0"><path d="M22 38 C12 30 10 20 14 14 C16 10 19 14 22 20 C25 14 28 10 30 14 C34 20 32 30 22 38Z" fill="none" stroke="#d99aaa" strokeWidth="2" /><path d="M22 38 C14 30 8 22 12 16 C14 10 18 16 22 22 C26 16 30 10 32 16 C36 22 30 30 22 38Z" fill="none" stroke="#d99aaa" strokeWidth="1.5" opacity="0.5" /><circle cx="22" cy="22" r="4" fill="#a93b5a" opacity="0.25" /></svg>
-          <div>
-            <span className="font-display text-2xl" style={{ color: "var(--gold)" }}>&ldquo;</span>
-            <p className="font-display text-base md:text-lg italic leading-snug" style={{ color: "var(--ink)" }}>Inquiry is the lamp that dispels the shadows of ignorance.</p>
-            <p className="font-ui text-[10px] mt-2 uppercase tracking-wider" style={{ color: "var(--muted)" }}>— Traditional Proverb</p>
+
+        <LotusDivider className="mb-10" />
+
+        {/* CTA */}
+        <div className="text-center">
+          <h2 className="font-display text-2xl mb-4" style={{ color: "var(--parchment)" }}>Join the Archive</h2>
+          <p className="font-body text-sm mb-6" style={{ color: "var(--ink-faint)" }}>Share your research and reflections with our community of seekers and scholars.</p>
+          <div className="flex gap-3 justify-center flex-wrap">
+            <Link href="/submit" className="btn-sacred btn-gold">Submit Your Work <ArrowRight size={14} /></Link>
+            <Link href="/community" className="btn-sacred btn-ghost">Join Community</Link>
           </div>
         </div>
       </div>

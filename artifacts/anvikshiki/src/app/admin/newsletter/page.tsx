@@ -1,7 +1,11 @@
-import { useLocation } from 'wouter';
 import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import { Mail, Users, Download } from "lucide-react";
 import { toast } from "sonner";
+import { AdminSidebar } from "@/components/sacred/AdminSidebar";
+import { LotusIcon } from "@/components/sacred/LotusIcon";
+
+const base = () => import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export default function AdminNewsletterPage() {
   const [, navigate] = useLocation();
@@ -9,47 +13,72 @@ export default function AdminNewsletterPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/admin/submissions`, { credentials: "include" })
-      .then((r) => { if (r.status === 401) { navigate("/admin/login"); return null; } return r.json(); })
-      .then(() => {
-        // Fetch subscribers - use a simple endpoint
-        return fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/newsletter`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: "check" }) });
-      })
-      .finally(() => setLoading(false));
-  }, [navigate]);
+    fetch(`${base()}/api/admin/newsletter`, { credentials: "include" })
+      .then(r => { if (r.status === 401) { navigate("/admin/login"); return null; } return r.json(); })
+      .then(d => d && (setSubscribers(d.subscribers || []), setLoading(false)))
+      .catch(() => setLoading(false));
+  }, []);
 
-  if (loading) return <div className="min-h-[100dvh] flex items-center justify-center"><div className="w-8 h-8 border-2 border-[var(--gold)] border-t-transparent rounded-full animate-spin" /></div>;
+  const exportCsv = () => {
+    const header = "email,name,subscribed_at\n";
+    const rows = subscribers.map(s => `${s.email},${s.name || ""},${s.createdAt || ""}`).join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "subscribers.csv"; a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exported");
+  };
 
   return (
-    <div className="min-h-[100dvh]" style={{ background: "var(--bg)" }}>
-      <div className="container-anv py-8">
-        <h1 className="font-display text-2xl mb-6" style={{ color: "var(--ink)" }}>Newsletter</h1>
-
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <div className="card-anv p-5 text-center">
-            <Users size={24} className="mx-auto mb-2" style={{ color: "var(--gold)" }} />
-            <p className="font-display text-3xl" style={{ color: "var(--ink)" }}>{subscribers.length}</p>
-            <p className="font-ui text-xs" style={{ color: "var(--muted)" }}>Subscribers</p>
+    <div className="admin-layout">
+      <AdminSidebar active="/admin/newsletter" />
+      <main className="admin-main">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="font-display text-2xl" style={{ color: "var(--gold-bright)" }}>Newsletter</h1>
+            <p className="font-ui text-xs mt-1" style={{ color: "var(--muted)" }}>{subscribers.length} active subscribers</p>
           </div>
+          <button type="button" onClick={exportCsv} className="btn-sacred btn-ghost text-xs inline-flex items-center gap-1.5">
+            <Download size={14} /> Export CSV
+          </button>
         </div>
 
-        <div className="card-anv p-6">
-          <h2 className="font-ui text-xs font-semibold tracking-[0.15em] uppercase mb-4" style={{ color: "var(--gold)" }}>
-            Subscriber List
-          </h2>
-          <p className="font-body text-sm" style={{ color: "var(--muted)" }}>
-            Newsletter subscriber management will be available once the first subscribers join.
-          </p>
-          <div className="mt-4">
-            <button
-              onClick={() => toast.info("Export feature coming soon")}
-              className="btn-secondary"
-            >
-              <Download size={14} /> Export CSV
-            </button>
-          </div>
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          {[{ icon: <Mail size={18} />, label: "Total Subscribers", value: subscribers.length, color: "var(--gold)" }].map(s => (
+            <div key={s.label} className="card-sacred p-4 col-span-1">
+              <div className="flex items-center justify-between mb-2">
+                <div style={{ color: s.color }}>{s.icon}</div>
+                <div className="font-display text-2xl" style={{ color: s.color }}>{s.value}</div>
+              </div>
+              <div className="font-ui text-xs" style={{ color: "var(--muted)" }}>{s.label}</div>
+            </div>
+          ))}
         </div>
-      </div>
+
+        <div className="card-sacred" style={{ overflow: "hidden" }}>
+          {loading ? (
+            <div className="flex justify-center py-10"><div style={{ width: 32, height: 32, border: "2px solid var(--border-gold)", borderTop: "2px solid var(--gold)", borderRadius: "50%", animation: "rotateSlow 0.8s linear infinite" }} role="status" /></div>
+          ) : subscribers.length === 0 ? (
+            <div className="flex flex-col items-center py-12 gap-3">
+              <LotusIcon size={36} style={{ color: "var(--gold)", opacity: 0.3 }} />
+              <p className="font-ui text-sm" style={{ color: "var(--muted)" }}>No subscribers yet</p>
+            </div>
+          ) : (
+            <table className="sacred-table" role="table">
+              <thead><tr><th scope="col">Email</th><th scope="col">Name</th><th scope="col">Subscribed</th></tr></thead>
+              <tbody>
+                {subscribers.map(s => (
+                  <tr key={s.id}>
+                    <td style={{ color: "var(--gold-bright)" }}>{s.email}</td>
+                    <td>{s.name || "—"}</td>
+                    <td>{s.createdAt ? new Date(s.createdAt).toLocaleDateString("en-IN") : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

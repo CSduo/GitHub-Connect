@@ -1,344 +1,84 @@
-"use client";
+import { useLocation } from "wouter";
+import { Feather, BookOpen } from "lucide-react";
+import { LotusDivider, LotusIcon } from "@/components/sacred/LotusIcon";
 
-import { useState } from "react";
-import { Link } from "wouter";
-import { ArrowLeft, Upload, FileText, Image, Lock, Check } from "lucide-react";
-import { toast } from "sonner";
-
-const SUBMISSION_TYPES = [
-  { value: "ESSAY", label: "Essay / Paper", icon: FileText },
-  { value: "REVIEW", label: "Review / Commentary", icon: FileText },
+const TYPES = [
+  { key: "essay",       label: "Essay / Paper",       icon: <Feather size={28} />,   color: "#1a0f3a", accent: "#7c5cbf", desc: "Original scholarly or reflective work" },
+  { key: "review",      label: "Review / Commentary", icon: <BookOpen size={28} />,  color: "#1a0d12", accent: "#8b1a4a", desc: "Critical review or commentary on existing work" },
+  { key: "translation", label: "Translation",         icon: <span style={{ fontSize: 26 }}>🖋️</span>, color: "#1a1208", accent: "#b8860b", desc: "Classical text translated into living language" },
+  { key: "book-review", label: "Book Review",         icon: <span style={{ fontSize: 26 }}>📚</span>, color: "#0d1f15", accent: "#2d6b50", desc: "Review of a published book or manuscript" },
 ];
 
-export default function SubmitPage() {
-  const [type, setType] = useState("ESSAY");
-  const [form, setForm] = useState({
-    submitterName: "",
-    submitterEmail: "",
-    title: "",
-    abstract: "",
-    notes: "",
-    consent: false,
-  });
-  const [files, setFiles] = useState<File[]>([]);
-  const [images, setImages] = useState<File[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+export default function SubmitLandingPage() {
+  const [, navigate] = useLocation();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.consent) {
-      toast.error("Please confirm this work is yours");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/submissions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, type }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        // Upload files if any
-        if (files.length > 0 && data.submission?.id) {
-          for (const file of files) {
-            const fd = new FormData();
-            fd.append("file", file);
-            fd.append("category", "manuscript");
-            fd.append("submissionId", data.submission.id);
-            await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/upload`, { method: "POST", body: fd });
-          }
-        }
-        if (images.length > 0 && data.submission?.id) {
-          for (const img of images) {
-            const fd = new FormData();
-            fd.append("file", img);
-            fd.append("category", "image");
-            fd.append("submissionId", data.submission.id);
-            await fetch(`${import.meta.env.BASE_URL.replace(/\/$/, "")}/api/upload`, { method: "POST", body: fd });
-          }
-        }
-        setSubmitted(true);
-        toast.success("Submission received!");
-      } else {
-        toast.error("Failed to submit. Please try again.");
-      }
-    } catch {
-      toast.error("Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
+  const choose = (type: string) => {
+    sessionStorage.setItem("anvikshiki_submit_type", type);
+    navigate("/submit/details");
   };
 
-  if (submitted) {
-    return (
-      <div className="min-h-[100dvh] pb-24 flex items-center justify-center" style={{ background: "var(--bg)" }}>
-        <div className="text-center max-w-md mx-auto px-4">
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
-            style={{ background: "rgba(138, 160, 113, 0.2)" }}
-          >
-            <Check size={32} style={{ color: "var(--sage)" }} />
-          </div>
-          <h1 className="font-display text-3xl" style={{ color: "var(--ink)" }}>
-            Submission Received
-          </h1>
-          <p className="font-body mt-3" style={{ color: "var(--muted)" }}>
-            Thank you for your contribution. Our editorial team will review your submission and respond within 2-4 weeks.
-          </p>
-          <Link href="/" className="btn-primary mt-6 inline-flex">
-            Return Home
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-[100dvh] pb-24" style={{ background: "var(--bg)" }}>
-      <div className="container-anv pt-4">
-        <Link href="/" className="inline-flex items-center gap-2 font-ui text-sm" style={{ color: "var(--muted)" }}>
-          <ArrowLeft size={16} /> Back
-        </Link>
-      </div>
-
-      {/* Hero Section */}
-      <div className="container-anv pt-4 pb-6">
-        <div className="card-anv overflow-hidden">
-          <div
-            className="relative min-h-[200px] md:min-h-[280px] flex flex-col justify-end p-6 md:p-10 bg-cover bg-center"
-            style={{
-              backgroundImage: "url('/submit_hero.jpg')",
-            }}
-          >
-            <div
-              className="absolute inset-0"
-              style={{
-                background: "linear-gradient(to top, color-mix(in srgb, var(--bg) 85%, transparent) 0%, transparent 100%)",
-              }}
-            />
-            <div className="relative z-10">
-              <span className="font-ui text-xs font-semibold tracking-[0.2em] uppercase mb-3 block" style={{ color: "var(--gold)" }}>
-                Submission Portal
-              </span>
-              <h1 className="font-display text-3xl md:text-5xl" style={{ color: "var(--ink)" }}>
-                Submit Your Work
-              </h1>
-              <p className="font-body mt-2 italic" style={{ color: "var(--muted)" }}>
-                Share your research. Contribute to knowledge.
-              </p>
-            </div>
-          </div>
+    <div style={{ background: "var(--bg)" }}>
+      {/* Hero */}
+      <div className="relative overflow-hidden" style={{ minHeight: 320 }}>
+        <div className="absolute inset-0" aria-hidden="true">
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #0f0518 0%, #120a20 50%, #0a0510 100%)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 40%, rgba(74,40,120,0.30) 0%, transparent 55%)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 20% 60%, rgba(139,26,74,0.22) 0%, transparent 45%)" }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 80, background: "linear-gradient(180deg, transparent, var(--bg))" }} />
+        </div>
+        <div className="container-anv relative z-10 flex flex-col items-center text-center py-20">
+          <LotusIcon size={32} className="mb-4 animate-float" style={{ color: "var(--gold)", opacity: 0.8 }} />
+          <div className="section-label mb-3">Submission Portal</div>
+          <h1 className="font-display mb-4" style={{ fontSize: "clamp(2.5rem, 6vw, 4.5rem)", color: "var(--gold-bright)", letterSpacing: "0.12em" }}>Submit</h1>
+          <p className="font-body text-base max-w-md" style={{ color: "var(--ink-faint)" }}>
+            Share your research, reflections, and translations with the Ānvīkṣikī community.
+          </p>
         </div>
       </div>
 
-      <div className="container-anv max-w-2xl">
-        <form onSubmit={handleSubmit} className="mt-6 card-anv p-6 md:p-8 space-y-6">
-          {/* Submission Type */}
-          <div>
-            <label className="font-ui text-xs font-semibold tracking-[0.1em] uppercase mb-3 block" style={{ color: "var(--gold)" }}>
-              Submission Type
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {SUBMISSION_TYPES.map((st) => (
-                <button
-                  key={st.value}
-                  type="button"
-                  onClick={() => setType(st.value)}
-                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-ui text-sm font-medium transition-all"
-                  style={{
-                    background: type === st.value ? "var(--gold)" : "var(--surface-soft)",
-                    color: type === st.value ? "#1a1108" : "var(--ink)",
-                    border: "1px solid var(--border)",
-                  }}
-                >
-                  <st.icon size={16} />
-                  {st.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* Type cards */}
+      <div className="container-anv py-10 pb-20">
+        <LotusDivider className="mb-8" />
+        <div className="text-center mb-8">
+          <div className="section-label mb-2">Submission Type</div>
+          <p className="font-body text-sm" style={{ color: "var(--ink-faint)" }}>Choose the type of work you are submitting</p>
+        </div>
 
-          {/* Name & Email */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>
-                Full Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={form.submitterName}
-                onChange={(e) => setForm({ ...form, submitterName: e.target.value })}
-                className="input-anv"
-                placeholder="Your name"
-              />
-            </div>
-            <div>
-              <label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>
-                Email Address *
-              </label>
-              <input
-                type="email"
-                required
-                value={form.submitterEmail}
-                onChange={(e) => setForm({ ...form, submitterEmail: e.target.value })}
-                className="input-anv"
-                placeholder="you@example.com"
-              />
-            </div>
-          </div>
-
-          {/* Title */}
-          <div>
-            <label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>
-              Title of Your Work *
-            </label>
-            <input
-              type="text"
-              required
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="input-anv"
-              placeholder="Enter title"
-            />
-          </div>
-
-          {/* Abstract */}
-          <div>
-            <label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>
-              Abstract *
-            </label>
-            <textarea
-              required
-              rows={5}
-              value={form.abstract}
-              onChange={(e) => setForm({ ...form, abstract: e.target.value })}
-              className="input-anv resize-none"
-              placeholder="Provide a brief summary of your work (150-250 words)."
-            />
-            <span className="font-ui text-xs mt-1 block text-right" style={{ color: "var(--muted)" }}>
-              {form.abstract.length} / 2500
-            </span>
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="font-ui text-xs font-medium mb-2 block" style={{ color: "var(--muted)" }}>
-              Notes to Editors (Optional)
-            </label>
-            <textarea
-              rows={3}
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              className="input-anv resize-none"
-              placeholder="Any additional information for the editorial team."
-            />
-          </div>
-
-          {/* File Upload - Manuscript */}
-          <div>
-            <label className="font-ui text-xs font-semibold tracking-[0.1em] uppercase mb-3 block" style={{ color: "var(--gold)" }}>
-              Upload Your Paper {type === "ESSAY" ? "*" : ""}
-            </label>
-            <div
-              className="border-2 border-dashed rounded-xl p-6 text-center transition-colors"
-              style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}
-            >
-              <Upload size={24} className="mx-auto mb-2" style={{ color: "var(--muted)" }} />
-              <p className="font-ui text-sm" style={{ color: "var(--muted)" }}>
-                Drag & drop your file here or click to browse
-              </p>
-              <p className="font-ui text-xs mt-1" style={{ color: "var(--muted)" }}>
-                PDF, DOC, DOCX · Max 50 MB
-              </p>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={(e) => setFiles(Array.from(e.target.files || []))}
-                className="hidden"
-                id="manuscript-upload"
-              />
-              <label htmlFor="manuscript-upload" className="btn-secondary mt-3 inline-flex cursor-pointer">
-                Select File
-              </label>
-              {files.length > 0 && (
-                <div className="mt-3 space-y-1">
-                  {files.map((f, i) => (
-                    <p key={i} className="font-ui text-xs" style={{ color: "var(--sage)" }}>
-                      {f.name} ({(f.size / 1024 / 1024).toFixed(1)} MB)
-                    </p>
-                  ))}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 max-w-3xl mx-auto">
+          {TYPES.map(t => (
+            <button key={t.key} type="button" onClick={() => choose(t.key)} aria-label={`Submit ${t.label}`} style={{ all: "unset", cursor: "pointer", display: "block" }}>
+              <div className="domain-card" style={{ aspectRatio: "3/4.5", background: `linear-gradient(180deg, ${t.color} 0%, #07040a 100%)` }}>
+                <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 30%, ${t.accent}25 0%, transparent 60%)` }} aria-hidden="true" />
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${t.accent}, transparent)` }} aria-hidden="true" />
+                <div style={{ position: "absolute", top: 6, left: 6, width: 12, height: 12, borderTop: "1px solid rgba(201,152,58,0.4)", borderLeft: "1px solid rgba(201,152,58,0.4)" }} aria-hidden="true" />
+                <div style={{ position: "absolute", top: 6, right: 6, width: 12, height: 12, borderTop: "1px solid rgba(201,152,58,0.4)", borderRight: "1px solid rgba(201,152,58,0.4)" }} aria-hidden="true" />
+                <div style={{ position: "absolute", bottom: 6, left: 6, width: 12, height: 12, borderBottom: "1px solid rgba(201,152,58,0.4)", borderLeft: "1px solid rgba(201,152,58,0.4)" }} aria-hidden="true" />
+                <div style={{ position: "absolute", bottom: 6, right: 6, width: 12, height: 12, borderBottom: "1px solid rgba(201,152,58,0.4)", borderRight: "1px solid rgba(201,152,58,0.4)" }} aria-hidden="true" />
+                <div className="absolute inset-x-0 top-8 flex justify-center" style={{ color: t.accent, filter: `drop-shadow(0 0 8px ${t.accent}90)` }}>{t.icon}</div>
+                <div className="absolute bottom-0 inset-x-0 p-4 text-center">
+                  <LotusIcon size={10} className="mx-auto mb-1.5" style={{ color: "var(--gold)", opacity: 0.4 }} />
+                  <div className="font-ui text-xs font-bold tracking-[0.12em] uppercase mb-1" style={{ color: "var(--gold-bright)" }}>{t.label}</div>
+                  <div className="font-body text-[10px] leading-tight" style={{ color: "var(--ink-faint)" }}>{t.desc}</div>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Image Upload */}
-          <div>
-            <label className="font-ui text-xs font-semibold tracking-[0.1em] uppercase mb-3 block" style={{ color: "var(--gold)" }}>
-              Upload Cover / Supporting Image (Optional)
-            </label>
-            <div
-              className="border-2 border-dashed rounded-xl p-6 text-center transition-colors"
-              style={{ borderColor: "var(--border)", background: "var(--surface-soft)" }}
-            >
-              <Image size={24} className="mx-auto mb-2" style={{ color: "var(--muted)" }} />
-              <p className="font-ui text-sm" style={{ color: "var(--muted)" }}>
-                Drag & drop image here or click to browse
-              </p>
-              <p className="font-ui text-xs mt-1" style={{ color: "var(--muted)" }}>
-                JPG, PNG, WEBP · Max 20 MB
-              </p>
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => setImages(Array.from(e.target.files || []))}
-                className="hidden"
-                id="image-upload"
-              />
-              <label htmlFor="image-upload" className="btn-secondary mt-3 inline-flex cursor-pointer">
-                Select Images
-              </label>
-              {images.length > 0 && (
-                <div className="mt-3 space-y-1">
-                  {images.map((img, i) => (
-                    <p key={i} className="font-ui text-xs" style={{ color: "var(--sage)" }}>
-                      {img.name} ({(img.size / 1024 / 1024).toFixed(1)} MB)
-                    </p>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Consent */}
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.consent}
-              onChange={(e) => setForm({ ...form, consent: e.target.checked })}
-              className="mt-1 w-4 h-4 rounded"
-            />
-            <span className="font-ui text-sm" style={{ color: "var(--muted)" }}>
-              I confirm this work is mine or I have permission to submit it.
-            </span>
-          </label>
-
-          {/* Submit */}
-          <div className="flex items-center gap-4 pt-4">
-            <button type="submit" disabled={loading} className="btn-primary w-full md:w-auto">
-              {loading ? "Submitting..." : "Submit for Review"}
+              </div>
             </button>
-            <div className="flex items-center gap-1 font-ui text-xs" style={{ color: "var(--muted)" }}>
-              <Lock size={12} /> Your submission is secure and confidential.
-            </div>
+          ))}
+        </div>
+
+        {/* Steps */}
+        <div className="mt-12 card-sacred p-6 max-w-2xl mx-auto">
+          <LotusDivider className="mb-4" />
+          <div className="grid sm:grid-cols-3 gap-4 text-center">
+            {[{ n: "1", l: "Choose Type", d: "Select what you are submitting" }, { n: "2", l: "Add Details", d: "Fill in your manuscript details" }, { n: "3", l: "Upload & Review", d: "Upload files and submit" }].map(s => (
+              <div key={s.n} className="flex flex-col items-center gap-2">
+                <div style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid var(--border-gold)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--gold)", fontFamily: "var(--font-display)", fontSize: "1rem" }}>{s.n}</div>
+                <div className="font-ui text-xs font-semibold" style={{ color: "var(--gold-bright)" }}>{s.l}</div>
+                <div className="font-body text-xs" style={{ color: "var(--ink-faint)" }}>{s.d}</div>
+              </div>
+            ))}
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

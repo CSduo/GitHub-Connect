@@ -380,6 +380,17 @@ router.patch("/admin/submissions/:id", requireAdmin, async (req, res) => {
   }
 });
 
+// DELETE /api/admin/submissions/:id
+router.delete("/admin/submissions/:id", requireAdmin, async (req, res) => {
+  try {
+    await db.delete(submissionsTable).where(eq(submissionsTable.id, req.params.id));
+    return res.json({ success: true });
+  } catch (err) {
+    req.log.error(err);
+    return res.status(500).json({ error: "Failed" });
+  }
+});
+
 // GET /api/admin/categories
 router.get("/admin/categories", requireAdmin, async (req, res) => {
   try {
