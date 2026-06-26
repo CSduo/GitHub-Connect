@@ -88,7 +88,7 @@ export default function SearchPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className={`badge ${r.kind === "paper" ? "badge-published" : "badge-approved"}`}>{r.kind}</span>
-                        {r.categoryId && <span className="font-ui text-[10px]" style={{ color: "var(--muted)" }}>{r.categoryId}</span>}
+                        {(r.categorySlug || r.categoryId) && <span className="font-ui text-[10px]" style={{ color: "var(--muted)" }}>{r.categorySlug || r.categoryId}</span>}
                       </div>
                       <h3 className="font-display text-xl leading-tight" style={{ color: "var(--parchment)" }}>{r.title}</h3>
                       {r.excerpt && <p className="font-body text-sm mt-1 line-clamp-2" style={{ color: "var(--ink-faint)" }}>{r.excerpt}</p>}
