@@ -4,8 +4,43 @@ import { submissionsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { getUserAuth } from "../lib/auth";
 import { z } from "zod";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
 const router = Router();
+
+const UPLOADS_DIR = process.env.UPLOADS_DIR || "/tmp/anvikshiki-uploads";
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+  filename: (_req, file, cb) => {
+    const safe = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
+    cb(null, `${Date.now()}-${safe}`);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 52 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
+    if (allowed.includes(file.mimetype) || file.fieldname === "coverImage") {
+      cb(null, true);
+    } else {
+      cb(new Error("File type not allowed"));
+    }
+  },
+});
 
 const submissionSchema = z.object({
   type: z.enum(["ESSAY", "PAPER", "REVIEW", "COMMENTARY"]),
@@ -46,60 +81,113 @@ router.post("/submissions", async (req, res) => {
   }
 });
 
-// POST /api/submissions/upload — accepts multipart but falls back to JSON fields
-router.post("/submissions/upload", async (req, res) => {
+// POST /api/submissions/upload — multipart form with optional file
+router.post(
+  "/submissions/upload",
+  upload.fields([
+    { name: "manuscript", maxCount: 1 },
+    { name: "coverImage", maxCount: 1 },
+  ]),
+  async (req: any, res) => {
+    try {
+      const submitterName = (req.body.submitterName || "").trim();
+      const submitterEmail = (req.body.submitterEmail || "").trim();
+      const title = (req.body.title || "").trim();
+      const abstract = (req.body.abstract || "Submitted via upload form").trim();
+      const typeRaw = (req.body.type || "ESSAY").toUpperCase();
+      const validTypes = ["ESSAY", "PAPER", "REVIEW", "COMMENTARY"];
+      const type = validTypes.includes(typeRaw) ? typeRaw as "ESSAY" | "PAPER" | "REVIEW" | "COMMENTARY" : "ESSAY";
+
+      if (!submitterName || !submitterEmail || !title) {
+        return res.status(400).json({ error: "Missing required fields: submitterName, submitterEmail, title" });
+      }
+
+      const manuscriptFile = req.files?.["manuscript"]?.[0];
+      const coverFile = req.files?.["coverImage"]?.[0];
+
+      const apiBase = process.env.API_BASE_URL || "";
+      const manuscriptUrl = manuscriptFile
+        ? `${apiBase}/api/uploads/${path.basename(manuscriptFile.path)}`
+        : null;
+      const coverUrl = coverFile
+        ? `${apiBase}/api/uploads/${path.basename(coverFile.path)}`
+        : null;
+
+      const noteLines = [
+        manuscriptFile ? `Manuscript: ${manuscriptFile.originalname} (${(manuscriptFile.size / 1024).toFixed(1)} KB)` : null,
+        manuscriptUrl ? `Manuscript URL: ${manuscriptUrl}` : null,
+        coverFile ? `Cover Image: ${coverFile.originalname}` : null,
+        coverUrl ? `Cover URL: ${coverUrl}` : null,
+        req.body.domain ? `Domain: ${req.body.domain}` : null,
+        req.body.keywords ? `Keywords: ${req.body.keywords}` : null,
+        req.body.notes ? `Notes: ${req.body.notes}` : null,
+      ].filter(Boolean).join("\n");
+
+      const auth = await getUserAuth(req);
+
+      const [submission] = await db.insert(submissionsTable).values({
+        userId: auth?.userId || null,
+        submitterName,
+        submitterEmail,
+        type,
+        title,
+        abstract,
+        notes: noteLines || null,
+        consent: true,
+      }).returning();
+
+      return res.status(201).json({
+        success: true,
+        submission,
+        files: {
+          manuscriptUrl,
+          coverUrl,
+        },
+      });
+    } catch (err: any) {
+      req.log.error(err);
+      return res.status(500).json({ error: "Upload failed", detail: err?.message });
+    }
+  }
+);
+
+// POST /api/submissions/write — full essay written in browser
+router.post("/submissions/write", async (req, res) => {
   try {
-    // Handle both multipart/form-data and application/json
-    const ct = req.headers["content-type"] || "";
-    let fields: Record<string, string> = {};
+    const schema = z.object({
+      type: z.enum(["ESSAY", "PAPER", "REVIEW", "COMMENTARY"]),
+      submitterName: z.string().min(1).max(160),
+      submitterEmail: z.string().email(),
+      title: z.string().min(1).max(500),
+      abstract: z.string().min(1).max(10000),
+      body: z.string().min(1),
+      notes: z.string().max(5000).optional(),
+      consent: z.union([z.boolean(), z.literal("true"), z.literal("false")]).transform(v => v === true || v === "true"),
+    });
 
-    if (ct.includes("application/json")) {
-      fields = req.body || {};
-    } else if (ct.includes("multipart/form-data") || ct.includes("application/x-www-form-urlencoded")) {
-      // Express will have already parsed urlencoded, but for multipart we need special handling
-      // Since busboy is not available, we extract from req.body if express-raw has it
-      // Otherwise, parse from query or default
-      fields = req.body || {};
-      // For multipart without busboy, we try to extract fields from the raw body if express has parsed them
-      // This is a best-effort fallback
-    } else {
-      fields = req.body || {};
-    }
-
-    const submitterName = (fields.submitterName || "").toString().trim();
-    const submitterEmail = (fields.submitterEmail || "").toString().trim();
-    const title = (fields.title || "").toString().trim();
-    const abstract = (fields.abstract || "").toString().trim();
-    const typeRaw = (fields.type || "ESSAY").toString().toUpperCase();
-    const notes = (fields.notes || "").toString().trim();
-
-    if (!submitterName || !submitterEmail || !title) {
-      return res.status(400).json({ error: "Missing required fields: submitterName, submitterEmail, title" });
-    }
-    if (!abstract) {
-      return res.status(400).json({ error: "Abstract is required" });
-    }
-
-    const validTypes = ["ESSAY", "PAPER", "REVIEW", "COMMENTARY"];
-    const type = validTypes.includes(typeRaw) ? typeRaw as "ESSAY" | "PAPER" | "REVIEW" | "COMMENTARY" : "ESSAY";
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: "Invalid input", details: parsed.error.flatten() });
 
     const auth = await getUserAuth(req);
+    const data = parsed.data;
+    if (!data.consent) return res.status(400).json({ error: "Consent is required" });
 
     const [submission] = await db.insert(submissionsTable).values({
       userId: auth?.userId || null,
-      submitterName,
-      submitterEmail,
-      type,
-      title,
-      abstract: abstract || "Submitted via upload form",
-      notes: notes || null,
+      submitterName: data.submitterName,
+      submitterEmail: data.submitterEmail,
+      type: data.type,
+      title: data.title,
+      abstract: data.abstract,
+      body: data.body,
+      notes: data.notes || null,
       consent: true,
     }).returning();
 
     return res.status(201).json({ success: true, submission });
-  } catch (err: any) {
+  } catch (err) {
     req.log.error(err);
-    return res.status(500).json({ error: "Upload failed", detail: err?.message });
+    return res.status(500).json({ error: "Write submission failed" });
   }
 });
 
@@ -120,4 +208,5 @@ router.get("/submissions", async (req, res) => {
   }
 });
 
+export { UPLOADS_DIR };
 export default router;

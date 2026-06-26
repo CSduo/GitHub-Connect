@@ -1,7 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "vite",
-  "buildCommand": "pnpm run build",
+  "buildCommand": "pnpm run typecheck:libs && pnpm --filter @workspace/anvikshiki run build",
   "outputDirectory": "artifacts/anvikshiki/dist/public",
   "rewrites": [
     {
@@ -9,7 +8,7 @@
       "destination": "/api/index"
     },
     {
-      "source": "/((?!assets/|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.webp|.*\\.js|.*\\.css).*)$",
+      "source": "/((?!assets/|favicon\\.ico|robots\\.txt|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.webp|.*\\.js|.*\\.css|.*\\.woff|.*\\.woff2|.*\\.ttf).*)$",
       "destination": "/index.html"
     }
   ]

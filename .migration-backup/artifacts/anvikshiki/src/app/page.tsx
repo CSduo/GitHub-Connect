@@ -32,108 +32,136 @@ export default function HomePage() {
     });
   }, []);
 
+  const heroImg = `${import.meta.env.BASE_URL}homepage_hero_scholar.png`;
+
   return (
     <div style={{ background: "var(--bg)" }}>
 
       {/* ═══ HERO ═══ */}
-      <section className="relative overflow-hidden" style={{ minHeight: "100vh" }}>
-        {/* Layered atmospheric background */}
-        <div className="absolute inset-0" aria-hidden="true">
-          {/* Base sky */}
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(170deg, #060118 0%, #0a0320 30%, #0d0620 55%, #080418 75%, #060210 100%)" }} />
-          {/* Moon glow — upper right */}
-          <div style={{ position: "absolute", top: "-5%", right: "10%", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(74,40,120,0.38) 0%, rgba(40,20,70,0.18) 40%, transparent 72%)" }} />
-          {/* Horizon lamp glow — lower center */}
-          <div style={{ position: "absolute", bottom: "0%", left: "50%", transform: "translateX(-50%)", width: 700, height: 360, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(160,80,20,0.28) 0%, rgba(100,50,10,0.12) 40%, transparent 72%)" }} />
-          {/* Rose/lotus haze — lower right */}
-          <div style={{ position: "absolute", bottom: "8%", right: "5%", width: 360, height: 280, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(139,26,74,0.28) 0%, transparent 65%)" }} />
-          {/* Manuscript warmth — lower left */}
-          <div style={{ position: "absolute", bottom: "10%", left: "0%", width: 360, height: 260, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(160,100,20,0.22) 0%, transparent 65%)" }} />
-          {/* Indigo atmosphere mid */}
-          <div style={{ position: "absolute", top: "25%", left: "20%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(30,15,60,0.35) 0%, transparent 70%)" }} />
-          {/* Bottom vignette */}
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "30%", background: "linear-gradient(180deg, transparent 0%, rgba(6,2,16,0.9) 100%)" }} />
+      <section style={{ background: "#f2e8d5", margin: 0, padding: 0 }}>
 
-          {/* Stars */}
-          {Array.from({ length: 38 }).map((_, i) => (
-            <div key={i} style={{
-              position: "absolute",
-              left: `${5 + (i * 39) % 90}%`, top: `${5 + (i * 53) % 75}%`,
-              width: i % 9 === 0 ? 3 : i % 4 === 0 ? 2 : 1.5,
-              height: i % 9 === 0 ? 3 : i % 4 === 0 ? 2 : 1.5,
-              borderRadius: "50%", background: "var(--gold)",
-              opacity: 0.04 + (i % 7) * 0.04,
-              animation: `shimmer ${2.5 + (i % 5)}s ease-in-out infinite`,
-              animationDelay: `${(i * 0.4) % 3}s`,
-            }} />
-          ))}
-          {/* A few brighter "lotus petal" accents */}
-          {[
-            { left: "18%", bottom: "28%", rotate: 15 },
-            { left: "80%", bottom: "20%", rotate: -20 },
-            { left: "65%", bottom: "35%", rotate: 35 },
-          ].map((p, i) => (
-            <div key={i} style={{ position: "absolute", left: p.left, bottom: p.bottom, width: 10, height: 10, borderRadius: "50% 0 50% 0", background: "var(--lotus)", opacity: 0.18, transform: `rotate(${p.rotate}deg)` }} />
-          ))}
+        {/* Illustration — full width */}
+        <div style={{ width: "100%", lineHeight: 0, overflow: "hidden", maxHeight: "58vw", minHeight: 220 }}>
+          <img
+            src={heroImg}
+            alt="A scholar walks through ancient ruins with a lantern and books, accompanied by a leopard and a great serpent, while a bird carries a scroll overhead"
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", display: "block" }}
+          />
         </div>
 
-        {/* Hero content */}
-        <div className="container-anv relative z-10 flex flex-col items-center justify-center text-center" style={{ minHeight: "100vh", paddingTop: "6rem", paddingBottom: "4rem" }}>
-
-          {/* Floating emblem */}
-          <div className="animate-float mb-6">
-            <div style={{ position: "relative", filter: "drop-shadow(0 0 32px rgba(201,152,58,0.4))" }}>
-              <Emblem size={110} />
-            </div>
-          </div>
-
-          {/* Thin gold line divider */}
-          <div style={{ height: 1, width: 100, background: "linear-gradient(90deg, transparent, var(--gold), transparent)", marginBottom: "1.25rem" }} aria-hidden="true" />
+        {/* Parchment content area */}
+        <div style={{ background: "#f2e8d5", textAlign: "center", padding: "2.5rem 1.5rem 2rem" }}>
 
           {/* Title */}
-          <h1 className="font-display mb-2" style={{ fontSize: "clamp(2.8rem, 9vw, 7rem)", color: "var(--gold-bright)", letterSpacing: "0.14em", lineHeight: 1, textShadow: "0 0 40px rgba(201,152,58,0.35)" }}>
+          <h1 className="font-display" style={{
+            fontSize: "clamp(2.8rem, 12vw, 5.5rem)",
+            color: "#2a1a0e",
+            letterSpacing: "0.13em",
+            lineHeight: 1,
+            marginBottom: "0.6rem",
+            fontWeight: 400,
+          }}>
             ĀNVĪKṢIKĪ
           </h1>
-          <p className="font-ui tracking-[0.38em] uppercase mb-8" style={{ fontSize: "clamp(0.55rem, 1.5vw, 0.7rem)", color: "var(--muted)" }}>
-            A Journal of Inquiry &amp; Civilizational Wisdom
+
+          {/* Italic subtitle */}
+          <p className="font-body" style={{ fontStyle: "italic", color: "#5c3d22", fontSize: "clamp(0.9rem, 2.5vw, 1.05rem)", marginBottom: "0.9rem" }}>
+            A Journal of Inquiry &amp; Civilizational Thought
           </p>
 
-          <LotusDivider className="mb-8" style={{ maxWidth: 220, margin: "0 auto 2rem" }} />
+          {/* Ornamental divider */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem", marginBottom: "1rem" }}>
+            <div style={{ height: 1, width: 48, background: "#b08050" }} />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2C10 6 6 8 2 8c4 0 8 2 10 6 2-4 6-6 10-6-4 0-8-2-10-6z" fill="#b08050" opacity="0.7"/>
+              <circle cx="12" cy="20" r="1.5" fill="#b08050" opacity="0.5"/>
+            </svg>
+            <div style={{ height: 1, width: 48, background: "#b08050" }} />
+          </div>
 
-          {/* State-based content */}
-          {featured ? (
-            <div className="mb-8 max-w-xl px-4">
-              <div className="section-label mb-2">Featured Essay</div>
-              <h2 className="font-display text-2xl md:text-3xl mb-2" style={{ color: "var(--parchment)" }}>{featured.title}</h2>
-              {featured.excerpt && <p className="font-body text-sm mb-4 italic" style={{ color: "var(--ink-faint)" }}>{featured.excerpt}</p>}
-              <Link href={`/articles/${featured.slug}`} className="btn-sacred btn-gold">
-                Read Essay <ArrowRight size={14} />
-              </Link>
-            </div>
-          ) : (
-            <div className="mb-8 px-4">
-              <p className="font-body text-base italic mb-7" style={{ color: "var(--ink-soft)", maxWidth: 340 }}>
-                The archive awakens —<br/>no essays published yet.
-              </p>
-              <Link href="/submit" className="btn-sacred btn-gold inline-flex items-center gap-2 px-8">
-                Submit Your Work <ArrowRight size={15} />
-              </Link>
-            </div>
-          )}
+          {/* Tagline */}
+          <p className="font-body" style={{ color: "#5c3d22", fontSize: "clamp(0.85rem, 2.2vw, 0.97rem)", lineHeight: 1.65, marginBottom: "2rem", maxWidth: 380, margin: "0 auto 2rem" }}>
+            A journey through archives and ideas,<br />
+            where inquiry becomes insight and first essays find their home.
+          </p>
 
-          {/* Ghost CTAs */}
-          <div className="flex items-center gap-3 flex-wrap justify-center">
-            <Link href="/browse" className="btn-sacred btn-ghost flex items-center gap-2">
-              <BookOpen size={14} /> Explore Journal
+          {/* Three stacked CTA buttons */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem", maxWidth: 420, margin: "0 auto 2rem" }}>
+
+            {/* Submit Your Work */}
+            <Link href="/submit">
+              <div style={{
+                display: "flex", alignItems: "center", gap: "1rem",
+                background: "#b97455", borderRadius: 8, padding: "0.95rem 1.25rem",
+                cursor: "pointer", border: "1.5px solid rgba(0,0,0,0.08)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 6px rgba(0,0,0,0.12)",
+                transition: "filter 0.15s",
+              }}>
+                <div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 6, background: "rgba(0,0,0,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 3C9.5 7 6 8.5 2 9c4 .5 8 2 10 6 2-4 6-5.5 10-6-4-.5-7.5-2-10-6z" fill="#f5e6d0" opacity="0.85"/>
+                    <circle cx="12" cy="21" r="1.3" fill="#f5e6d0" opacity="0.6"/>
+                  </svg>
+                </div>
+                <span className="font-ui" style={{ flex: 1, textAlign: "center", letterSpacing: "0.12em", fontSize: "0.82rem", color: "#f5e6d0", fontWeight: 600 }}>
+                  SUBMIT YOUR WORK
+                </span>
+                <span style={{ color: "#f5e6d0", fontSize: "1.1rem", opacity: 0.8 }}>›</span>
+              </div>
             </Link>
-            <Link href="/community" className="btn-sacred btn-ghost flex items-center gap-2">
-              <Users size={14} /> Join Community
+
+            {/* Explore Journal */}
+            <Link href="/browse">
+              <div style={{
+                display: "flex", alignItems: "center", gap: "1rem",
+                background: "#5e7352", borderRadius: 8, padding: "0.95rem 1.25rem",
+                cursor: "pointer", border: "1.5px solid rgba(0,0,0,0.08)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 6px rgba(0,0,0,0.10)",
+              }}>
+                <div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 6, background: "rgba(0,0,0,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8d9c0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                  </svg>
+                </div>
+                <span className="font-ui" style={{ flex: 1, textAlign: "center", letterSpacing: "0.12em", fontSize: "0.82rem", color: "#e8d9c0", fontWeight: 600 }}>
+                  EXPLORE JOURNAL
+                </span>
+                <span style={{ color: "#e8d9c0", fontSize: "1.1rem", opacity: 0.8 }}>›</span>
+              </div>
+            </Link>
+
+            {/* Join Community */}
+            <Link href="/community">
+              <div style={{
+                display: "flex", alignItems: "center", gap: "1rem",
+                background: "#7a8f6c", borderRadius: 8, padding: "0.95rem 1.25rem",
+                cursor: "pointer", border: "1.5px solid rgba(0,0,0,0.08)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 6px rgba(0,0,0,0.08)",
+              }}>
+                <div style={{ flexShrink: 0, width: 34, height: 34, borderRadius: 6, background: "rgba(0,0,0,0.10)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8d9c0" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                </div>
+                <span className="font-ui" style={{ flex: 1, textAlign: "center", letterSpacing: "0.12em", fontSize: "0.82rem", color: "#e8d9c0", fontWeight: 600 }}>
+                  JOIN COMMUNITY
+                </span>
+                <span style={{ color: "#e8d9c0", fontSize: "1.1rem", opacity: 0.8 }}>›</span>
+              </div>
             </Link>
           </div>
 
-          {/* Scroll cue */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-fade-up" aria-hidden="true">
-            <div style={{ width: 1, height: 36, background: "linear-gradient(180deg, var(--border-gold), transparent)" }} />
+          {/* Bottom lotus ornament */}
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "0.4rem", paddingTop: "0.5rem", paddingBottom: "0.25rem" }} aria-hidden="true">
+            <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#b08050", opacity: 0.35 }} />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3C10 7 6 9 2 9c4 0 8 2 10 6 2-4 6-6 10-6-4 0-8-2-10-6z" fill="#b08050" opacity="0.45"/>
+            </svg>
+            <div style={{ width: 4, height: 4, borderRadius: "50%", background: "#b08050", opacity: 0.35 }} />
           </div>
         </div>
       </section>

@@ -44,33 +44,35 @@ export default function SubmitUploadPage() {
     const typeMap: Record<string,string> = { essay:"ESSAY", paper:"PAPER", review:"REVIEW", commentary:"COMMENTARY", "book-review":"COMMENTARY", translation:"ESSAY" };
     const type = typeMap[typeRaw.toLowerCase()] || "ESSAY";
 
-    const fileNote = [
-      `File: ${mainFile.name} (${fmt(mainFile.size)})`,
-      imgFile ? `Cover image: ${imgFile.name} (${fmt(imgFile.size)})` : "",
-      details.domain ? `Domain: ${details.domain}` : "",
-      details.keywords ? `Keywords: ${details.keywords}` : "",
-      details.audience ? `Audience: ${details.audience}` : "",
-      details.notes ? `Notes: ${details.notes}` : "",
-    ].filter(Boolean).join("\n");
-
-    const payload = {
-      submitterName: details.fullName || details.name || "",
-      submitterEmail: details.email || "",
-      title: details.title || "",
-      abstract: details.abstract || "See attached manuscript.",
-      notes: fileNote, type, consent: true,
-    };
-
-    if (!payload.submitterName || !payload.submitterEmail || !payload.title) {
+    if (!details.fullName && !details.name) {
+      setError("Submission details are missing. Please go back to Step 2."); setSubmitting(false); setProgress(0); return;
+    }
+    if (!details.email || !details.title) {
       setError("Submission details are missing. Please go back to Step 2."); setSubmitting(false); setProgress(0); return;
     }
 
     try {
-      const sim = setInterval(() => setProgress(p => Math.min(p + 12, 88)), 320);
-      const r = await fetch(`${base()}/api/submissions`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        credentials: "include", body: JSON.stringify(payload),
+      const sim = setInterval(() => setProgress(p => Math.min(p + 10, 85)), 400);
+
+      const formData = new FormData();
+      formData.append("manuscript", mainFile);
+      if (imgFile) formData.append("coverImage", imgFile);
+      formData.append("submitterName", details.fullName || details.name || "");
+      formData.append("submitterEmail", details.email || "");
+      formData.append("title", details.title || "");
+      formData.append("abstract", details.abstract || "See attached manuscript.");
+      formData.append("type", type);
+      formData.append("consent", "true");
+      if (details.domain) formData.append("domain", details.domain);
+      if (details.keywords) formData.append("keywords", details.keywords);
+      if (details.notes) formData.append("notes", details.notes);
+
+      const r = await fetch(`${base()}/api/submissions/upload`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
       });
+
       clearInterval(sim); setProgress(100);
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || "Submission failed");
@@ -187,7 +189,7 @@ export default function SubmitUploadPage() {
               <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg, var(--rose-bright), var(--gold), var(--gold-bright))", transition: "width 0.35s ease", boxShadow: "0 0 10px rgba(201,152,58,0.5)" }} role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} />
             </div>
             <p className="font-ui text-[10px] text-center mt-2 tracking-[0.15em]" style={{ color: "var(--ink-faint)" }}>
-              {progress < 100 ? `Submitting… ${progress}%` : "Complete"}
+              {progress < 100 ? `Uploading… ${progress}%` : "Complete"}
             </p>
           </div>
         )}
@@ -208,13 +210,13 @@ export default function SubmitUploadPage() {
           className="w-full btn-sacred btn-gold flex items-center justify-center gap-2"
           style={{ borderRadius: 6, padding: "1rem", fontSize: "0.8rem", letterSpacing: "0.18em" }}
         >
-          {submitting ? `Submitting ${progress}%…` : (<>SUBMIT FOR REVIEW <ArrowLeft size={14} style={{ transform: "rotate(180deg)" }} /></>)}
+          {submitting ? `Uploading ${progress}%…` : (<>SUBMIT FOR REVIEW <ArrowLeft size={14} style={{ transform: "rotate(180deg)" }} /></>)}
         </button>
 
         {/* Security note */}
         <div className="flex items-center justify-center gap-1.5 mt-4">
           <Lock size={11} style={{ color: "var(--ink-faint)", opacity: 0.5 }} />
-          <p className="font-ui text-[10px]" style={{ color: "var(--ink-faint)", opacity: 0.55 }}>Your submission is secure and confidential.</p>
+          <p className="font-ui text-[10px]" style={{ color: "var(--ink-faint)", opacity: 0.55 }}>Your manuscript is uploaded securely and kept confidential.</p>
         </div>
       </div>
     </div>

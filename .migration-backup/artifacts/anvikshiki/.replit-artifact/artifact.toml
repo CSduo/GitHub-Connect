@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Anvikshiki — Journal & Research Platform"
+title = "Ānvīkṣikī — Journal & Research Platform"
 version = "1.0.0"
 id = "artifacts/anvikshiki"
 router = "path"
