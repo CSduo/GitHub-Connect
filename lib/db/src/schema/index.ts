@@ -120,6 +120,7 @@ export const submissionsTable = pgTable("submissions", {
   type: submissionTypeEnum("type").notNull(),
   title: text("title").notNull(),
   abstract: text("abstract").notNull(),
+  body: text("body"),
   notes: text("notes"),
   consent: boolean("consent").notNull().default(false),
   status: submissionStatusEnum("status").notNull().default("RECEIVED"),

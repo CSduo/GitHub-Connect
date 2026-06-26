@@ -25,6 +25,7 @@ import AccountPage      from "@/app/account/page";
 import SubmitLandingPage  from "@/app/submit/page";
 import SubmitDetailsPage  from "@/app/submit/details/page";
 import SubmitUploadPage   from "@/app/submit/upload/page";
+import SubmitWritePage    from "@/app/submit/write/page";
 import SubmitSuccessPage  from "@/app/submit/success/page";
 import SavedPage        from "@/app/saved/page";
 import PrivacyPage      from "@/app/privacy/page";
@@ -84,6 +85,7 @@ function Router() {
         <Route path="/submit"            component={() => <AppShell><SubmitLandingPage /></AppShell>} />
         <Route path="/submit/details"    component={() => <AppShell><SubmitDetailsPage /></AppShell>} />
         <Route path="/submit/upload"     component={() => <AppShell><SubmitUploadPage /></AppShell>} />
+        <Route path="/submit/write"      component={() => <AppShell><SubmitWritePage /></AppShell>} />
         <Route path="/submit/success"    component={() => <AppShell><SubmitSuccessPage /></AppShell>} />
         <Route path="/saved"             component={() => <AppShell><SavedPage /></AppShell>} />
         <Route path="/privacy"           component={() => <AppShell><PrivacyPage /></AppShell>} />
