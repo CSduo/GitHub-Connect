@@ -7,8 +7,9 @@ import { EmptyState } from "@/components/sacred/EmptyState";
 const base = () => import.meta.env.BASE_URL.replace(/\/$/, "");
 
 export default function ArticlePage() {
-  const [, params] = useRoute("/articles/:slug");
-  const slug = params?.slug || "";
+  const [, articlesParams] = useRoute("/articles/:slug");
+  const [, essaysParams]   = useRoute("/essays/:slug");
+  const slug = articlesParams?.slug || essaysParams?.slug || "";
   const [article, setArticle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
