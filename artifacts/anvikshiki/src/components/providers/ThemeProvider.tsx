@@ -9,14 +9,14 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextType>({ theme: "dark", toggleTheme: () => {} });
+const ThemeContext = createContext<ThemeContextType>({ theme: "light", toggleTheme: () => {} });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     try {
-      return (localStorage.getItem("anv-theme") as Theme) || "dark";
+      return (localStorage.getItem("anv-theme") as Theme) || "light";
     } catch {
-      return "dark";
+      return "light";
     }
   });
 
@@ -24,13 +24,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.setAttribute("data-theme", theme);
     try { localStorage.setItem("anv-theme", theme); } catch {}
   }, [theme]);
-
-  // Force dark on mount if nothing in storage
-  useEffect(() => {
-    if (!localStorage.getItem("anv-theme")) {
-      document.documentElement.setAttribute("data-theme", "dark");
-    }
-  }, []);
 
   const toggleTheme = () => setTheme(t => t === "dark" ? "light" : "dark");
 
