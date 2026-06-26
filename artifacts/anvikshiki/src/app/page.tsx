@@ -40,12 +40,15 @@ export default function HomePage() {
       {/* ═══ HERO ═══ */}
       <section style={{ background: "#f2e8d5", margin: 0, padding: 0 }}>
 
-        {/* Illustration — full width */}
-        <div style={{ width: "100%", lineHeight: 0, overflow: "hidden", maxHeight: "58vw", minHeight: 220 }}>
+        {/* Illustration — full width
+            The source image is a portrait phone-mockup (941×1672) that includes
+            a ~3.5% fake header at the top. We clip it by pulling the img up
+            with a negative margin, then hide the overflow. */}
+        <div style={{ width: "100%", overflow: "hidden", maxHeight: "min(72vw, 520px)", minHeight: 240, lineHeight: 0 }}>
           <img
             src={heroImg}
             alt="A scholar walks through ancient ruins with a lantern and books, accompanied by a leopard and a great serpent, while a bird carries a scroll overhead"
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", display: "block" }}
+            style={{ width: "100%", height: "auto", display: "block", marginTop: "-13%" }}
           />
         </div>
 

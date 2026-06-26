@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { SacredHeader } from "@/components/sacred/SacredHeader";
 import { SacredFooter } from "@/components/sacred/SacredFooter";
+import { ParchmentHeader } from "@/components/sacred/ParchmentHeader";
 import { LoadingScreen } from "@/components/sacred/LoadingScreen";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -59,6 +60,16 @@ function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+function HomeShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col min-h-[100dvh]">
+      <ParchmentHeader />
+      <main className="flex-1 animate-fade-in">{children}</main>
+      <SacredFooter />
+    </div>
+  );
+}
+
 function AdminShell({ children }: { children: React.ReactNode }) {
   return <div style={{ background: "var(--bg-deep)", minHeight: "100vh" }}>{children}</div>;
 }
@@ -69,7 +80,7 @@ function Router() {
       <ScrollToTop />
       <Switch>
         {/* Public */}
-        <Route path="/"                  component={() => <AppShell><HomePage /></AppShell>} />
+        <Route path="/"                  component={() => <HomeShell><HomePage /></HomeShell>} />
         <Route path="/browse"            component={() => <AppShell><BrowsePage /></AppShell>} />
         <Route path="/domains/:slug"     component={() => <AppShell><DomainPage /></AppShell>} />
         <Route path="/articles/:slug"    component={() => <AppShell><ArticlePage /></AppShell>} />
@@ -112,7 +123,12 @@ function Router() {
 }
 
 function App() {
-  const [loading, setLoading] = useState(() => !sessionStorage.getItem("anv_loaded"));
+  const [loading, setLoading] = useState(() => {
+    try {
+      if (new URLSearchParams(window.location.search).has("skip")) return false;
+      return !sessionStorage.getItem("anv_loaded");
+    } catch { return true; }
+  });
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -24,7 +24,12 @@ export function LoadingScreen({ onDone }: { onDone?: () => void }) {
   return (
     <div
       className="loading-screen"
-      style={{ transition: "opacity 0.55s ease", opacity: fade ? 0 : 1, pointerEvents: fade ? "none" : "auto" }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        overflow: "hidden",
+        transition: "opacity 0.55s ease", opacity: fade ? 0 : 1, pointerEvents: fade ? "none" : "auto",
+      }}
       role="status" aria-live="polite" aria-label="Loading Ānvīkṣikī"
     >
       {/* Atmospheric radial layers */}
