@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { BookMarked, LogOut, Menu, Search, User, X } from "lucide-react";
 import { toast } from "sonner";
-import { Emblem } from "@/components/brand/Emblem";
+import newEmblemSrc from "@assets/ChatGPT_Image_Jun_27,_2026,_11_44_33_AM_1782541070157.png";
 import { ThemeToggle } from "@/components/brand/ThemeToggle";
 import { AnimalGlyph } from "@/components/manuscript/AnimalGlyph";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -45,15 +45,18 @@ export function SacredHeader() {
         <div className="container-anv">
           <div className="flex min-h-[72px] items-center justify-between gap-4">
             <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="Anvikshiki home">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[8px] border border-[var(--border-ink)] bg-[var(--surface)] text-[var(--gold)]">
-                <Emblem size={34} />
-              </span>
+              <img
+                src={newEmblemSrc}
+                alt="Ānvīkṣikī emblem"
+                className="h-14 w-14 shrink-0 object-contain"
+                style={{ borderRadius: "6px" }}
+              />
               <span className="min-w-0">
                 <span className="block truncate font-display text-xl leading-none tracking-[0.2em] text-[var(--ink)] md:text-2xl">
-                  ANVIKSIKI
+                  ĀNVĪKṢIKĪ
                 </span>
                 <span className="mt-1 block truncate font-ui text-[0.56rem] font-bold uppercase tracking-[0.24em] text-[var(--ink-faint)]">
-                  Journal & Research Platform
+                  Journal &amp; Research Platform
                 </span>
               </span>
             </Link>
@@ -145,10 +148,13 @@ export function SacredHeader() {
           <aside className="absolute right-0 top-0 flex h-full w-[min(86vw,320px)] flex-col border-l border-[var(--border-ink)] bg-[var(--surface)] p-5 shadow-[var(--shadow-lg)]" onClick={(event) => event.stopPropagation()}>
             <div className="mb-7 flex items-center justify-between gap-3">
               <Link href="/" className="flex items-center gap-2" onClick={() => setMenuOpen(false)}>
-                <span className="grid h-10 w-10 place-items-center rounded-[8px] border border-[var(--border-ink)] text-[var(--gold)]">
-                  <Emblem size={30} />
-                </span>
-                <span className="font-display text-lg tracking-[0.18em] text-[var(--ink)]">ANVIKSIKI</span>
+                <img
+                  src={newEmblemSrc}
+                  alt=""
+                  className="h-11 w-11 object-contain"
+                  style={{ borderRadius: "6px" }}
+                />
+                <span className="font-display text-lg tracking-[0.18em] text-[var(--ink)]">ĀNVĪKṢIKĪ</span>
               </Link>
               <button type="button" className="grid h-9 w-9 place-items-center rounded-sm text-[var(--ink)] hover:bg-[var(--ink-wash)]" onClick={() => setMenuOpen(false)} aria-label="Close menu">
                 <X size={20} />

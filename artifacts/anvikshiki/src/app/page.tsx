@@ -1,57 +1,15 @@
-import { useState } from "react";
 import { Link } from "wouter";
-import {
-  ArrowRight,
-  BookOpen,
-  Clock3,
-  Send,
-  Users,
-  X,
-} from "lucide-react";
+import { ArrowRight, BookOpen, Clock3, Send, Users } from "lucide-react";
 import { AnimalGlyph } from "@/components/manuscript/AnimalGlyph";
 
-const asset = (path: string) =>
-  `${import.meta.env.BASE_URL}${path.replace(/^\//, "")}`;
-
-const REFERENCE_ART = asset("/hero_redesign_reference.png");
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const asset = (p: string) => `${base}${p.startsWith("/") ? p : `/${p}`}`;
 
 const FEATURED_ESSAYS = [
-  {
-    category: "History",
-    title: "The Caravan of Ideas: Trade Routes and Knowledge",
-    author: "Meera Vaidyanathan",
-    minutes: 8,
-    domain: "geopolitics",
-    href: "/browse",
-    color: "#76546d",
-  },
-  {
-    category: "Philosophy",
-    title: "Inquiry in Ancient Traditions: Then and Now",
-    author: "Arjun Dev",
-    minutes: 6,
-    domain: "philosophy",
-    href: "/domains/philosophy",
-    color: "#aa7135",
-  },
-  {
-    category: "Civilizations",
-    title: "Writing, Memory, and the Making of Civilizations",
-    author: "K. R. Iyer",
-    minutes: 9,
-    domain: "civilizational-thought",
-    href: "/domains/civilizational-thought",
-    color: "#6f7547",
-  },
-  {
-    category: "Arts & Literature",
-    title: "Caravans, Omens, and the Premodern Imagination",
-    author: "Moon Sen",
-    minutes: 9,
-    domain: "aesthetics",
-    href: "/domains/aesthetics",
-    color: "#a35e3d",
-  },
+  { category: "History", title: "The Caravan of Ideas: Trade Routes and Knowledge", author: "Meera Vaidyanathan", minutes: 8, domain: "geopolitics", href: "/browse", color: "#76546d" },
+  { category: "Philosophy", title: "Inquiry in Ancient Traditions: Then and Now", author: "Arjun Dev", minutes: 6, domain: "philosophy", href: "/domains/philosophy", color: "#aa7135" },
+  { category: "Civilizations", title: "Writing, Memory, and the Making of Civilizations", author: "K. R. Iyer", minutes: 9, domain: "civilizational-thought", href: "/domains/civilizational-thought", color: "#6f7547" },
+  { category: "Arts & Literature", title: "Caravans, Omens, and the Premodern Imagination", author: "Moon Sen", minutes: 9, domain: "aesthetics", href: "/domains/aesthetics", color: "#a35e3d" },
 ] as const;
 
 const HOME_DOMAINS = [
@@ -63,181 +21,145 @@ const HOME_DOMAINS = [
   { label: "Arts & Literature", domain: "multimedia", href: "/domains/aesthetics", color: "#667252" },
 ] as const;
 
-const HOME_ACTIONS = [
-  { label: "Submit Your Work", href: "/submit", icon: Send, tone: "terracotta" },
-  { label: "Explore Journal", href: "/browse", icon: BookOpen, tone: "sage" },
-  { label: "Join Community", href: "/community", icon: Users, tone: "parchment" },
-] as const;
-
-function ReferenceHeader() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  return (
-    <>
-      <header className="home-reference-header">
-        <img src={REFERENCE_ART} alt="" aria-hidden="true" />
-        <Link
-          href="/"
-          className="home-header-hit home-header-brand"
-          aria-label="Anvikshiki home"
-        />
-        <Link
-          href="/search"
-          className="home-header-hit home-header-search"
-          aria-label="Search the journal"
-        />
-        <button
-          type="button"
-          className="home-header-hit home-header-menu"
-          aria-label="Open menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen(true)}
-        />
-      </header>
-
-      {menuOpen ? (
-        <div
-          className="home-menu-backdrop"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Main menu"
-          onClick={() => setMenuOpen(false)}
-        >
-          <aside className="home-menu-panel" onClick={(event) => event.stopPropagation()}>
-            <div className="home-menu-heading">
-              <span>ANVIKSIKI</span>
-              <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu">
-                <X size={28} />
-              </button>
-            </div>
-            <nav aria-label="Homepage navigation">
-              {[
-                ["Explore Journal", "/browse"],
-                ["Browse Domains", "/browse"],
-                ["Papers", "/papers"],
-                ["Archive", "/archive"],
-                ["Submit Your Work", "/submit"],
-                ["Join Community", "/community"],
-                ["About", "/about"],
-              ].map(([label, href]) => (
-                <Link key={href + label} href={href} onClick={() => setMenuOpen(false)}>
-                  <span>{label}</span>
-                  <ArrowRight size={17} />
-                </Link>
-              ))}
-            </nav>
-          </aside>
-        </div>
-      ) : null}
-    </>
-  );
-}
-
-function ExactHero() {
-  return (
-    <section className="home-reference-hero" aria-labelledby="home-title">
-      <img src={REFERENCE_ART} alt="" aria-hidden="true" />
-      <div className="sr-only">
-        <h1 id="home-title">A Journey Through Archives and Ideas</h1>
-        <p>Where inquiry becomes insight and first essays find their home.</p>
-      </div>
-      <Link
-        href="/browse"
-        className="home-hero-cta-hit"
-        aria-label="Explore the journal"
-      />
-    </section>
-  );
-}
-
-function FeaturedEssays() {
-  return (
-    <section className="home-featured" aria-labelledby="featured-title">
-      <div className="home-section-heading">
-        <h2 id="featured-title">Featured Essays</h2>
-        <Link href="/browse">
-          View all <ArrowRight size={17} />
-        </Link>
-      </div>
-
-      <div className="home-essay-rail">
-        {FEATURED_ESSAYS.map((essay) => (
-          <Link key={essay.title} href={essay.href} className="home-essay-card">
-            <div className="home-essay-category" style={{ color: essay.color }}>
-              <AnimalGlyph domain={essay.domain} size={42} />
-              <span>{essay.category}</span>
-            </div>
-            <h3>{essay.title}</h3>
-            <p>{essay.author}</p>
-            <div className="home-read-time">
-              <Clock3 size={17} />
-              <span>{essay.minutes} min read</span>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      <div className="home-carousel-dots" aria-hidden="true">
-        <span className="active" />
-        <span />
-        <span />
-        <span />
-        <span />
-      </div>
-    </section>
-  );
-}
-
-function DomainStrip() {
-  return (
-    <section className="home-domains" aria-labelledby="domains-title">
-      <h2 id="domains-title">Browse by Domain</h2>
-      <div className="home-domain-grid">
-        {HOME_DOMAINS.map((item) => (
-          <Link key={item.label} href={item.href} className="home-domain-link">
-            <span className="home-domain-glyph" style={{ color: item.color }}>
-              <AnimalGlyph domain={item.domain} size={58} />
-            </span>
-            <span>{item.label}</span>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ActionRows() {
-  return (
-    <section className="home-actions" aria-label="Continue exploring">
-      {HOME_ACTIONS.map((item) => {
-        const Icon = item.icon;
-        return (
-          <Link key={item.href} href={item.href} className={`home-action-row is-${item.tone}`}>
-            <Icon size={29} strokeWidth={1.35} />
-            <span>{item.label}</span>
-            <ArrowRight size={24} strokeWidth={1.5} />
-          </Link>
-        );
-      })}
-      <div className="home-bottom-ornament" aria-hidden="true">
-        <span />
-        <i>✧</i>
-        <b>♧</b>
-        <i>✧</i>
-        <span />
-      </div>
-    </section>
-  );
-}
-
 export default function HomePage() {
   return (
-    <div className="home-reference-page">
-      <ReferenceHeader />
-      <ExactHero />
-      <FeaturedEssays />
-      <DomainStrip />
-      <ActionRows />
+    <div className="home-v2">
+
+      {/* ─── HERO ─── */}
+      <section className="home-v2-hero">
+        <div className="container-anv">
+          <div className="home-v2-hero-inner">
+
+            {/* Left: editorial text */}
+            <div className="home-v2-hero-text">
+              <p className="home-v2-platform-label">Journal &amp; Research Platform</p>
+
+              <h1 className="home-v2-headline">
+                Where Inquiry<br />Becomes Insight
+              </h1>
+
+              <p className="home-v2-tagline">
+                A home for essays, research papers, and long-form ideas at the intersection of history, philosophy, civilizational thought, and the arts.
+              </p>
+
+              <div className="home-v2-cta-row">
+                <Link href="/browse" className="home-v2-btn-primary">
+                  <BookOpen size={16} /> Explore Journal
+                </Link>
+                <Link href="/submit" className="home-v2-btn-outline">
+                  <Send size={16} /> Submit Work
+                </Link>
+              </div>
+
+              <div className="home-v2-domain-pills">
+                {HOME_DOMAINS.map(d => (
+                  <Link
+                    key={d.label}
+                    href={d.href}
+                    className="home-v2-pill"
+                    style={{ color: d.color, borderColor: `${d.color}55`, background: `${d.color}11` }}
+                  >
+                    <AnimalGlyph domain={d.domain} size={14} />
+                    {d.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: scholar illustration — full portrait, no crop */}
+            <div className="home-v2-hero-image-col">
+              <img
+                src={asset("/homepage_hero_scholar.png")}
+                alt="Scholar carrying ancient texts through a fantastical library"
+                className="home-v2-hero-image"
+              />
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FEATURED ESSAYS ─── */}
+      <section className="home-v2-section home-v2-section-border">
+        <div className="container-anv">
+          <div className="home-v2-section-head">
+            <h2 className="home-v2-section-title">Featured Essays</h2>
+            <Link href="/browse" className="home-v2-view-all">
+              View All <ArrowRight size={15} />
+            </Link>
+          </div>
+          <div className="home-v2-essay-grid">
+            {FEATURED_ESSAYS.map(essay => (
+              <Link key={essay.title} href={essay.href} className="home-v2-essay-card">
+                <div className="home-v2-essay-meta">
+                  <AnimalGlyph domain={essay.domain} size={36} />
+                  <span className="home-v2-essay-cat" style={{ color: essay.color }}>{essay.category}</span>
+                </div>
+                <h3 className="home-v2-essay-title">{essay.title}</h3>
+                <div className="home-v2-essay-footer">
+                  <p className="home-v2-essay-author">{essay.author}</p>
+                  <span className="home-v2-read-time">
+                    <Clock3 size={13} /> {essay.minutes} min
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── BROWSE BY DOMAIN ─── */}
+      <section className="home-v2-section home-v2-section-border">
+        <div className="container-anv">
+          <h2 className="home-v2-section-title" style={{ marginBottom: "1.25rem" }}>Browse by Domain</h2>
+          <div className="home-v2-domain-grid">
+            {HOME_DOMAINS.map(item => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="home-v2-domain-card"
+                style={{ borderColor: `${item.color}44`, background: `${item.color}0b`, color: item.color }}
+              >
+                <AnimalGlyph domain={item.domain} size={48} />
+                <span className="home-v2-domain-label">{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── ACTION ROWS ─── */}
+      <section className="home-v2-section">
+        <div className="container-anv">
+          <div style={{ display: "grid", gap: "0.5rem" }}>
+            {[
+              { label: "Submit Your Work", href: "/submit", icon: Send,     bg: "var(--terracotta)", text: "var(--surface)" },
+              { label: "Explore Journal",  href: "/browse",  icon: BookOpen, bg: "var(--ink-soft)",   text: "var(--bg-deep)" },
+              { label: "Join Community",   href: "/community", icon: Users,  bg: "var(--gold-pale)",  text: "var(--ink)" },
+            ].map(({ label, href, icon: Icon, bg, text }) => (
+              <Link
+                key={href}
+                href={href}
+                className="home-v2-action"
+                style={{ background: bg, color: text }}
+              >
+                <Icon size={26} strokeWidth={1.4} />
+                <span className="home-v2-action-label">{label}</span>
+                <ArrowRight size={22} strokeWidth={1.5} style={{ justifySelf: "end" }} />
+              </Link>
+            ))}
+          </div>
+
+          <div className="home-v2-ornament">
+            <span />
+            <i>✧</i>
+            <b>♧</b>
+            <i>✧</i>
+            <span />
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 }
