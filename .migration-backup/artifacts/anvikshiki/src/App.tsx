@@ -53,8 +53,16 @@ function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-[100dvh] cosmic-bg">
       <SacredHeader />
-      <main className="flex-1 animate-fade-in">{children}</main>
+      <main id="main-content" className="flex-1 animate-fade-in">{children}</main>
       <SacredFooter />
+    </div>
+  );
+}
+
+function HomeShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="home-reference-stage">
+      <main id="main-content">{children}</main>
     </div>
   );
 }
@@ -69,7 +77,7 @@ function Router() {
       <ScrollToTop />
       <Switch>
         {/* Public */}
-        <Route path="/"                  component={() => <AppShell><HomePage /></AppShell>} />
+        <Route path="/"                  component={() => <HomeShell><HomePage /></HomeShell>} />
         <Route path="/browse"            component={() => <AppShell><BrowsePage /></AppShell>} />
         <Route path="/domains/:slug"     component={() => <AppShell><DomainPage /></AppShell>} />
         <Route path="/articles/:slug"    component={() => <AppShell><ArticlePage /></AppShell>} />
@@ -112,7 +120,12 @@ function Router() {
 }
 
 function App() {
-  const [loading, setLoading] = useState(() => !sessionStorage.getItem("anv_loaded"));
+  const [loading, setLoading] = useState(() => {
+    try {
+      if (new URLSearchParams(window.location.search).has("skip")) return false;
+      return !sessionStorage.getItem("anv_loaded");
+    } catch { return true; }
+  });
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -1,14 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm run typecheck:libs && pnpm --filter @workspace/anvikshiki run build",
+  "framework": "vite",
+  "installCommand": "pnpm install --filter @workspace/anvikshiki --no-frozen-lockfile",
+  "buildCommand": "pnpm --filter @workspace/anvikshiki build",
   "outputDirectory": "artifacts/anvikshiki/dist/public",
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index"
-    },
-    {
-      "source": "/((?!assets/|favicon\\.ico|robots\\.txt|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.webp|.*\\.js|.*\\.css|.*\\.woff|.*\\.woff2|.*\\.ttf).*)$",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
