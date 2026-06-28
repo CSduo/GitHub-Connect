@@ -44,13 +44,21 @@ export function SacredHeader() {
     <>
       {/* ── Main header ── */}
       <header
-        className="sticky top-0 z-50"
+        className="sticky top-0 z-50 sacred-header-outer"
         style={{
-          background: HEADER_BG_LIGHT,
-          borderBottom: "1px solid rgba(139,96,32,0.22)",
-          boxShadow: "0 2px 16px rgba(100,72,30,0.07)",
+          background: "var(--surface)",
+          borderBottom: "1px solid var(--border-gold)",
+          boxShadow: "var(--shadow-sm)",
         }}
       >
+        {/* Large emblem anchored to far-left edge */}
+        <img
+          src={EMBLEM_SRC}
+          alt=""
+          aria-hidden="true"
+          className="sacred-emblem-hero"
+        />
+
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded focus:bg-[var(--surface)] focus:px-3 focus:py-2 focus:text-[var(--ink)]"
@@ -58,16 +66,11 @@ export function SacredHeader() {
           Skip to main content
         </a>
 
-        <div className="container-anv">
+        <div className="container-anv sacred-header-container">
           <div className="sacred-header-row">
 
-            {/* Brand identity */}
+            {/* Brand identity — text only, emblem is the hero above */}
             <Link href="/" className="sacred-brand" aria-label="Ānvīkṣikī home">
-              <img
-                src={EMBLEM_SRC}
-                alt="Ānvīkṣikī emblem"
-                className="sacred-emblem-img"
-              />
               <span className="sacred-brand-text">
                 <span className="sacred-brand-name">ĀNVĪKṢIKĪ</span>
                 <span className="sacred-brand-sub">Journal &amp; Research Platform</span>

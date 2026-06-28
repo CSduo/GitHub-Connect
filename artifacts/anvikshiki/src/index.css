@@ -1594,6 +1594,47 @@ button {
   background: rgba(139, 96, 32, 0.08);
 }
 
+/* ── Hero emblem — absolutely anchored to far-left of header ─── */
+.sacred-header-outer {
+  position: relative;
+  overflow: visible;
+}
+
+.sacred-emblem-hero {
+  display: none; /* hidden on mobile */
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  width: 240px;
+  height: 240px;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.96;
+}
+
+@media (min-width: 1024px) {
+  .sacred-emblem-hero {
+    display: block;
+    left: -14px;
+    width: 276px;
+    height: 276px;
+  }
+}
+
+/* Shift header content right so it clears the hero emblem */
+.sacred-header-container {
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 1024px) {
+  .sacred-header-container .sacred-header-row {
+    padding-left: 230px;
+  }
+}
+
 /* ── Celestial theme toggle ──────────────────────────────────── */
 .anv-theme-toggle {
   position: relative;
