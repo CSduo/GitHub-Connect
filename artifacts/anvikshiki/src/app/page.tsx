@@ -64,7 +64,6 @@ export default function HomePage() {
             playsInline
             poster={asset("/homepage_hero_scholar.png")}
           />
-          <div className="home-v3-scrim" />
         </div>
 
         {/* Editorial content — left text zone */}
