@@ -45,13 +45,19 @@ export default function AccountPage() {
   }, [user, loadingPage, navigate]);
 
   useEffect(() => {
+    let timeoutId: number | undefined;
     if (!user) {
-      const timeout = window.setTimeout(() => {
+      timeoutId = window.setTimeout(() => {
         if (!user) navigate("/login");
       }, 1500);
-      return () => window.clearTimeout(timeout);
+    } else {
+      setLoadingPage(false);
     }
-    setLoadingPage(false);
+    return () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
   }, [user, navigate]);
 
   const handleLogout = async () => {

@@ -1609,6 +1609,52 @@ button {
 .sacred-header-outer {
   position: relative;
   overflow: visible;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-gold);
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sacred-header-row {
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sacred-emblem-box {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0.4s cubic-bezier(0.16, 1, 0.3, 1), height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Scrolled state header adjustments */
+.sacred-header-outer.sacred-header-scrolled {
+  background: var(--surface-soft) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(42, 31, 14, 0.08) !important;
+  border-bottom: 1px solid var(--border-gold) !important;
+}
+
+[data-theme="dark"] .sacred-header-outer.sacred-header-scrolled {
+  background: rgba(33, 23, 14, 0.85) !important; /* Semi-transparent dark surface */
+}
+
+.sacred-header-scrolled .sacred-header-row {
+  height: 52px !important;
+}
+
+@media (min-width: 640px) {
+  .sacred-header-scrolled .sacred-header-row {
+    height: 58px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sacred-header-scrolled .sacred-header-row {
+    height: 64px !important;
+  }
+}
+
+.sacred-header-scrolled .sacred-emblem-box {
+  transform: scale(0.8);
+  transform-origin: left center;
 }
 
 .sacred-emblem-hero {

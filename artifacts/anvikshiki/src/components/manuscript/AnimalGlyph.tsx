@@ -6,6 +6,7 @@ type AnimalGlyphProps = {
   size?: number;
   className?: string;
   title?: string;
+  style?: React.CSSProperties;
 };
 
 const strokeProps = {
@@ -188,7 +189,7 @@ function glyphFor(key: DomainKey) {
   }
 }
 
-export function AnimalGlyph({ domain = "archive", size = 32, className, title }: AnimalGlyphProps) {
+export function AnimalGlyph({ domain = "archive", size = 32, className, title, style }: AnimalGlyphProps) {
   const key = normalizeDomainKey(domain);
   const labelled = Boolean(title);
 
@@ -198,6 +199,7 @@ export function AnimalGlyph({ domain = "archive", size = 32, className, title }:
       height={size}
       viewBox="0 0 32 32"
       className={className}
+      style={style}
       role={labelled ? "img" : undefined}
       aria-label={labelled ? title : undefined}
       aria-hidden={labelled ? undefined : true}

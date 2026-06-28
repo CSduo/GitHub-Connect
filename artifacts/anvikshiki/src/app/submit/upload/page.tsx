@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { AlertCircle, ArrowLeft, CheckCircle, Image as ImageIcon, Lock, Upload, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, Image as ImageIcon, Lock, Upload, X } from "lucide-react";
 import { AnimalGlyph } from "@/components/manuscript/AnimalGlyph";
 import { HeroPanel } from "@/components/manuscript/HeroPanel";
 import { OrnamentDivider } from "@/components/manuscript/OrnamentDivider";

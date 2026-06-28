@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { BookMarked, LogOut, Menu, Search, User, X } from "lucide-react";
 import { toast } from "sonner";
@@ -30,7 +30,16 @@ export function SacredHeader() {
   const [loc, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { user, logout } = useAuthContext();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -43,14 +52,7 @@ export function SacredHeader() {
   return (
     <>
       {/* ── Main header ── */}
-      <header
-        className="sticky top-0 z-50 sacred-header-outer"
-        style={{
-          background: "var(--surface)",
-          borderBottom: "1px solid var(--border-gold)",
-          boxShadow: "var(--shadow-sm)",
-        }}
-      >
+      <header className={`sticky top-0 z-50 sacred-header-outer ${scrolled ? "sacred-header-scrolled" : ""}`}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded focus:bg-[var(--surface)] focus:px-3 focus:py-2 focus:text-[var(--ink)]"

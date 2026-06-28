@@ -8,6 +8,7 @@ import { SacredFooter } from "@/components/sacred/SacredFooter";
 import { LoadingScreen } from "@/components/sacred/LoadingScreen";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { PageTransition } from "@/components/providers/PageTransition";
 
 /* ── Public pages ── */
 import HomePage         from "@/app/page";
@@ -63,7 +64,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-[100dvh] cosmic-bg">
       <SacredHeader />
-      <main id="main-content" className="flex-1 animate-fade-in">{children}</main>
+      <main id="main-content" className="flex-1">
+        <PageTransition>{children}</PageTransition>
+      </main>
       <SacredFooter />
     </div>
   );
