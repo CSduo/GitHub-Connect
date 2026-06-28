@@ -77,7 +77,7 @@ function Router() {
       <ScrollToTop />
       <Switch>
         {/* Public */}
-        <Route path="/"                  component={() => <HomeShell><HomePage /></HomeShell>} />
+        <Route path="/"                  component={() => <AppShell><HomePage /></AppShell>} />
         <Route path="/browse"            component={() => <AppShell><BrowsePage /></AppShell>} />
         <Route path="/domains/:slug"     component={() => <AppShell><DomainPage /></AppShell>} />
         <Route path="/articles/:slug"    component={() => <AppShell><ArticlePage /></AppShell>} />

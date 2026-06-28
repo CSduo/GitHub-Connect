@@ -1,1 +1,0 @@
-- [Hero image clipping technique](hero-image-clip.md) — CSS margin % = container WIDTH, use marginTop "-X%" on img to clip portrait mockup headers at any screen size

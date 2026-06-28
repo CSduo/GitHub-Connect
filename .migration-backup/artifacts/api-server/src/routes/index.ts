@@ -9,6 +9,8 @@ import newsletterRouter from "./newsletter";
 import submissionsRouter from "./submissions";
 import adminRouter from "./admin";
 import archiveRouter from "./archive";
+import savedItemsRouter from "./saved-items";
+import uploadsRouter from "./uploads";
 
 const router: IRouter = Router();
 
@@ -22,5 +24,7 @@ router.use(newsletterRouter);
 router.use(submissionsRouter);
 router.use(adminRouter);
 router.use(archiveRouter);
+router.use(savedItemsRouter);
+router.use(uploadsRouter);
 
 export default router;

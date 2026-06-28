@@ -59,6 +59,10 @@ export async function verifyAdminToken(token: string) {
 }
 
 export function getUserTokenFromRequest(req: Request): string | null {
+  // cookie-parser puts cookies in req.cookies
+  const fromCookies = (req as any).cookies?.user_session;
+  if (fromCookies) return fromCookies;
+  // fallback: manual header parse
   const cookie = req.headers.cookie;
   if (!cookie) return null;
   const match = cookie.match(/(?:^|;\s*)user_session=([^;]+)/);
@@ -66,6 +70,8 @@ export function getUserTokenFromRequest(req: Request): string | null {
 }
 
 export function getAdminTokenFromRequest(req: Request): string | null {
+  const fromCookies = (req as any).cookies?.admin_session;
+  if (fromCookies) return fromCookies;
   const cookie = req.headers.cookie;
   if (!cookie) return null;
   const match = cookie.match(/(?:^|;\s*)admin_session=([^;]+)/);
